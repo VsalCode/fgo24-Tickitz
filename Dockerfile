@@ -1,12 +1,17 @@
-FROM node:lts-alpine
+# Stage 1: Build the React application
+FROM node:lts-alpine AS build
+
 WORKDIR /workspace
-COPY package*.json .
+
+ARG VITE_TMDB_API_KEY
+ENV VITE_TMDB_API_KEY=$VITE_TMDB_API_KEY
+
+COPY package*.json . 
 RUN npm install
 COPY . .
 RUN npm run build
 
 FROM nginx:latest
 
-COPY --from=0 /workspace/dist/ /usr/share/nginx/html/
+COPY --from=build /workspace/dist/ /usr/share/nginx/html/
 EXPOSE 80
-

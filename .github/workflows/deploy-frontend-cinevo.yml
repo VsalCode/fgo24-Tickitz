@@ -20,11 +20,11 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ghcr.io/vsalcode/fgo24-react-cinevo:latest .
+          docker build --build-arg VITE_TMDB_API_KEY=${{ secrets.VITE_TMDB_API_KEY }} -t ghcr.io/vsalcode/fgo24-react-cinevo:latest .
 
       - name: Push Docker Image to GHCR
         run: |
-          docker push  ghcr.io/vsalcode/fgo24-react-cinevo:latest
+          docker push ghcr.io/vsalcode/fgo24-react-cinevo:latest
 
   deploy:
     name: Deploy to VPS
@@ -37,10 +37,9 @@ jobs:
         with:
           host: 146.190.102.54
           username: faisal
-          key: ${{ secrets.SSH_PRIVATE_KEY}}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 9401
           script: |
-            echo "Pulling latest image from GHCR..."
             echo "Pulling latest image from GHCR..."
             docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.APP_TOKEN }}
             docker pull ghcr.io/vsalcode/fgo24-react-cinevo:latest
