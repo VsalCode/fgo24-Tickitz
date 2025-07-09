@@ -1,0 +1,45 @@
+name: Deploy Frontend to GHCR
+on:
+  push:
+    branches:
+      - main
+      
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Create .env.production
+        run: echo "${{ secrets.VITE_TMDB_API_KEY }}" > .env.production
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: vsalcode
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/vsalcode/cinevo:latest
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: faisal
+          port: 9401
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker pull ghcr.io/vsalcode/cinevo:latest
+            docker rm -f cinevo || true
+            docker run -d -p 9402:80 --name cinevo ghcr.io/vsalcode/cinevo:latest
