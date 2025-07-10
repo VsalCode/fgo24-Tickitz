@@ -4,32 +4,35 @@ import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { MdLogout } from "react-icons/md";
-// import { userLogout } from "../redux/reducer/auth";
+import { authActions } from "../redux/reducer/auth";
 import toast, { Toaster } from "react-hot-toast";
 import logo from '../assets/icon/logo.png'
+import http from "../utils/axios";
 
 const Navbar = () => {
   const [showHamburger, setShowHamburger] = useState(false);
-  const dispatch = useDispatch();
-  const [currentUser, setCurrentUser] = useState(null)
-  const userLogin = useSelector((state) => state.auth.currentUser);
-  const checkDataUsers = useSelector((state) => state.users.users);
+  const dispatch = useDispatch();    
+  const user = useSelector((state) => state.auth.credentials);
 
-  React.useEffect(() => {
-  if (userLogin !== null) {
-    const filtered = checkDataUsers.filter(
-      (e) => e.id === userLogin.id && userLogin.email === e.email
-    )[0]
-    setCurrentUser(filtered);
-  } else {
-    setCurrentUser(null);
+  async function logoutEndpoint(token){
+    const { data } = await http(token).post("/auth/logout", {
+      }, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+    
+      if (!data.success) {
+        toast.error(data.message || "Logout failed!");
+        return null;
+      }
+      return data.results;
   }
-}, [userLogin, checkDataUsers]);
-
 
   function handleLogout() {
+    dispatch(authActions(null));
+    logoutEndpoint(user.token)
     toast.success("Logout Success!");
-    // dispatch(userLogout());
   }
 
   return (
@@ -44,13 +47,13 @@ const Navbar = () => {
           <Link to="/movies">MOVIE</Link>
           <Link to="/movies">BUY TICKET</Link>
         </div>
-        {currentUser ? (
+        {user ? (
           <div className="md:flex md:items-center md:gap-3 hidden">
             <div className="bg-[#EAEFEF] size-9 text-primary flex items-center justify-center rounded-full font-bold">
-              {currentUser.fullname ? currentUser.fullname.split("").slice(0, 2).join("").toUpperCase() : currentUser.email?.split("@").splice(0, 1).join("").split("").slice(0, 2).join("").toUpperCase()}
+              {user.fullname ? user.fullname.split("").slice(0, 2).join("").toUpperCase() : user.email?.split("@").splice(0, 1).join("").split("").slice(0, 2).join("").toUpperCase()}
             </div>
             <div>
-              <p className="text-xl">{currentUser?.fullname ? currentUser.fullname : currentUser.email?.split("@").splice(0, 1)}</p>
+              <p className="text-xl">{user?.fullname ? user.fullname : user.email?.split("@").splice(0, 1)}</p>
               <Link to="/account-settings" className="text-sm mb-[-5px] text-third">
                 account settings
               </Link>
@@ -84,14 +87,14 @@ const Navbar = () => {
           <Link to="/">HOME</Link>
           <Link to="/movies">MOVIE</Link>
           <Link to="/movies">BUY TICKET</Link>
-          {currentUser ? (
+          {user ? (
             <div className="flex-between gap-3 bg-primary p-5 rounded-2xl">
               <div className="flex items-center gap-4">
                 <div className="bg-[#EAEFEF] size-9 text-primary flex items-center justify-center rounded-full font-bold">
-                  {currentUser.fullname ? currentUser.fullname.split("").slice(0, 2).join("").toUpperCase() : currentUser.email?.split("@").splice(0, 1).join("").split("").slice(0, 2).join("").toUpperCase()}
+                  {user.fullname ? user.fullname.split("").slice(0, 2).join("").toUpperCase() : user.email?.split("@").splice(0, 1).join("").split("").slice(0, 2).join("").toUpperCase()}
                 </div>
                 <div className="flex flex-col items-start">
-                  <p className="text-xl">{currentUser?.fullname ? currentUser.fullname : currentUser.email?.split("@").splice(0, 1)}</p>
+                  <p className="text-xl">{user?.fullname ? user.fullname : user.email?.split("@").splice(0, 1)}</p>
                   <Link to="/account-settings" className="text-sm mb-[-5px] text-third">
                     account settings
                   </Link>
