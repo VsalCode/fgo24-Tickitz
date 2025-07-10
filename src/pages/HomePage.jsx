@@ -3,8 +3,8 @@ import { FaMoneyBillWave } from "react-icons/fa";
 import { RiCustomerService2Fill } from "react-icons/ri";
 import { MdStars } from "react-icons/md";
 import BenefitCard from "../components/BenefitCard";
-import NowShowingMovies from "../components/NowShowingMovies";
-import UpcomingMovies from "../components/UpcomingMovies";
+// import NowShowingMovies from "../components/NowShowingMovies";
+// import UpcomingMovies from "../components/UpcomingMovies";
 import Subscribe from "../components/Subscribe";
 
 const HomePage = () => {
@@ -23,7 +23,7 @@ const HomePage = () => {
             <p className="text-fourth text-lg">Sign up and get the ticket with a lot of discount</p>
           </div>
         </div>
-        <NowShowingMovies />
+        {/* <NowShowingMovies /> */}
       </section>
       <section id="benefit-page" className="bg-secondary text-white w-full text-sixth flex lg:flex-row flex-col lg:px-15 px-10 h-fit py-20 rounded-6xl justify-center items-center ">
         <div className=" flex lg:items-start items-center flex-col gap-5 p-2 lg:pb-0 pb-10">
@@ -38,7 +38,7 @@ const HomePage = () => {
           <BenefitCard text="24/7 Customer Support" icon={<RiCustomerService2Fill />} />
         </div>
       </section>
-      <UpcomingMovies />
+      {/* <UpcomingMovies /> */}
       <Subscribe />
     </>
   );

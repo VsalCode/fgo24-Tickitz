@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { MdLogout } from "react-icons/md";
-import { userLogout } from "../redux/reducer/auth";
+// import { userLogout } from "../redux/reducer/auth";
 import toast, { Toaster } from "react-hot-toast";
 import logo from '../assets/icon/logo.png'
 
@@ -29,7 +29,7 @@ const Navbar = () => {
 
   function handleLogout() {
     toast.success("Logout Success!");
-    dispatch(userLogout());
+    // dispatch(userLogout());
   }
 
   return (

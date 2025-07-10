@@ -6,11 +6,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { useForm } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch} from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { userLogin, adminLogin } from "../redux/reducer/auth";
+import { authActions } from "../redux/reducer/auth";
+import http from "../utils/axios";
 
 const schema = yup
   .object({
@@ -28,37 +29,59 @@ const Login = () => {
   } = useForm({
     resolver: yupResolver(schema),
   });
-  const dataUsers = useSelector((state) => state.users.users);
   const dispatch = useDispatch();
   const nav = useNavigate();
 
-  function handleLogin(dataLogin) {
-    const { email, password } = dataLogin;
-
-    let currentUser = dataUsers.filter((users) => users.id !== null && users.email === email && window.atob(users.password) === password && users.role === "user")[0]
-    
-    let admin = dataUsers.find((users) => users.email === email && window.atob(users.password) === password && users.role === "admin");
-
-    if (admin) {
-      toast("Halo Admin!", { icon: "🖐", });
-      dispatch(adminLogin(admin))
-      setTimeout(() => {
-        nav("/dashboard-admin");
-      }, 2000);
-    } else if (currentUser) {
-      // console.log(currentUser);
-      dispatch(userLogin({ id: currentUser.id, email: currentUser.email, password: currentUser.password }));
-
-      toast.success("Login Succes!");
-      setTimeout(() => {
-        nav("/",{replace: true });
-      }, 2000);
-    } else if (!currentUser) {
-      toast.error("Your account is not found!");
-    } else {
-      toast.error("Failed to Login!");
+async function getUserToken(dataLogin) {
+  const { data } = await http().post("/auth/login", {
+    email: dataLogin.email,
+    password: dataLogin.password,
+  }, {
+    headers: {
+      "Content-Type": "application/json"
     }
+  });
+
+  if (!data.success) {
+    toast.error(data.message || "Login failed!");
+    return null;
   }
+  return data.results; 
+}
+
+async function getUserProfile(token) {
+  const { data } = await http(token).get("/user");
+
+  if (!data.success) {
+    toast.error(data.message || "Failed to fetch user profile!");
+    return null; 
+  }
+  return data.results;
+}
+
+async function handleLogin(dataLogin) {
+  const tokenData = await getUserToken(dataLogin);  
+  if (!tokenData) {
+    toast.error("Login failed!");
+    return;
+  }
+
+  const result = await getUserProfile(tokenData); 
+  if (!result) {
+    toast.error("Failed to fetch user profile!");
+    return;
+  }
+
+  dispatch(authActions({ token: tokenData, email: result.email, role: result.roles }));
+
+  toast.success("Login Successfully!");
+
+  const redirectPath = result.roles.includes("admin") ? "/dashboard-admin" : "/";
+  setTimeout(() => {
+    nav(redirectPath);
+  }, 2000);
+}
+
 
   return (
     <main className="sm:bg-sixth sm:bg-primary bg-white h-fit py-10 flex-center flex-col font-sans">

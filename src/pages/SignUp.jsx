@@ -87,7 +87,7 @@ const SignUp = () => {
       toast.error("No response from server. Please try again later.");
     }
   }
-}
+  }
 
 
   return (
