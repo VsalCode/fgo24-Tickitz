@@ -8,10 +8,11 @@ import { FaFacebook } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useDispatch, useSelector } from "react-redux";
-import { addUser } from "../redux/reducer/users";
+// import { addUser } from "../redux/reducer/users";
 import toast, { Toaster } from "react-hot-toast";
-import { nanoid } from "@reduxjs/toolkit";
+// import { useDispatch, useSelector } from "react-redux";
+// import { nanoid } from "@reduxjs/toolkit";
+import http from "../utils/axios";
 
 const schema = yup
   .object({
@@ -37,10 +38,9 @@ const SignUp = () => {
       agreeToTerms: false,
     },
   });
-  let dataRegistUsers = useSelector((state) => state.users.users);
-  const dispatch = useDispatch();
+  // let dataRegistUsers = useSelector((state) => state.users.users);
+  // const dispatch = useDispatch();
   const nav = useNavigate();
-
   // console.log("agreeToTerms:", watch("agreeToTerms"));
 
   function handleShowPassword(e) {
@@ -48,28 +48,28 @@ const SignUp = () => {
     setShowPassword(!showPassword);
   }
 
-  function handleRegister(dataRegister) {
-    const { email } = dataRegister;
+  async function handleRegister(dataRegister) {
+  try {
+    const { data } = await http().post("/auth/register", {
+      "email": dataRegister.email,
+      "password": dataRegister.password,
+      'confirmPassword': dataRegister.confirmPassword
+    }, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
 
-    const checkAccAvailable = dataRegistUsers.find((e) => e.email === email);
-
-    if (checkAccAvailable) {
-      toast.error("email was registered!");
-    } else {
-      const formatAddUser = {
-        id: nanoid(),
-        email: dataRegister.email,
-        password: window.btoa(dataRegister.password),
-        role: "user",
-      };
-      // console.log(formatAddUser);
-      dispatch(addUser(formatAddUser));
-      toast.success("Register Success!");
-      setTimeout(() => {
-        nav("/login");
-      }, 2000);
-    }
+    console.log(data); 
+    toast.success("Register Success!");
+    setTimeout(() => {
+      nav("/login");
+    }, 2000);
+  } catch (error) {
+    console.error(error);
+    toast.error("Email was already registered!");
   }
+}
 
   return (
     <main className="sm:bg-sixth sm:bg-primary bg-white h-fit py-5 flex-center flex-col font-sans">
@@ -124,7 +124,10 @@ const SignUp = () => {
               JOIN
             </button>
             <p>
-              Already Have an Account? <Link to="/login" className="text-blue-600">Login</Link>
+              Already Have an Account?{" "}
+              <Link to="/login" className="text-blue-600">
+                Login
+              </Link>
             </p>
           </div>
           <div className="flex sm:flex-row flex-col gap-3 mt-5">
