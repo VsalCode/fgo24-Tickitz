@@ -51,25 +51,44 @@ const SignUp = () => {
   async function handleRegister(dataRegister) {
   try {
     const { data } = await http().post("/auth/register", {
-      "email": dataRegister.email,
-      "password": dataRegister.password,
-      'confirmPassword': dataRegister.confirmPassword
+      email: dataRegister.email,
+      password: dataRegister.password,
+      confirmPassword: dataRegister.confirmPassword,
     }, {
       headers: {
         "Content-Type": "application/json"
       }
     });
 
-    console.log(data); 
-    toast.success("Register Success!");
-    setTimeout(() => {
-      nav("/login");
-    }, 2000);
+    if (data.success) {
+      console.log(data.message);
+      toast.success(data.message);
+      setTimeout(() => {
+        nav("/login");
+      }, 2000);
+    } else {
+      toast.error(data.message || "Registration failed!");
+    }
   } catch (error) {
     console.error(error);
-    toast.error("Email was already registered!");
+
+    if (error.response) {
+      const status = error.response.status;
+      const message = error.response.data.message ;
+
+      if (status === 400) {
+        toast.error(`Bad Request: ${message}`);
+      } else if (status === 500) {
+        toast.error(`Internal Server Error: ${message}`);
+      } else {
+        toast.error(`Error: ${message}`);
+      }
+    } else {
+      toast.error("No response from server. Please try again later.");
+    }
   }
 }
+
 
   return (
     <main className="sm:bg-sixth sm:bg-primary bg-white h-fit py-5 flex-center flex-col font-sans">
