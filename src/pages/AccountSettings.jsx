@@ -1,17 +1,17 @@
 import { useForm } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { LuEye, LuEyeClosed } from "react-icons/lu";
-import { useState } from "react";
-import { updateUser } from "../redux/reducer/users";
+import { useState, useEffect } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import http from "../utils/axios";
 
 const schema = yup.object().shape({
   fullname: yup.string().optional(),
   email: yup.string().email("Invalid email format").optional(),
-  phone: yup.string().matches(/^\d+$/, "Phone number must contain only digits").optional(),
+  phone: yup.string().optional(),
   newPassword: yup.string().optional(),
   confirmPassword: yup.string().when("newPassword", {
     is: (newPassword) => newPassword && newPassword.length > 0,
@@ -26,45 +26,90 @@ const schema = yup.object().shape({
 
 const AccountSettings = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const dispatch = useDispatch();
-  const userLogin = useSelector((state) => state.auth.currentUser);
-  const checkDataUsers = useSelector((state) => state.users.users);
-  const currentUser = checkDataUsers.find((e) => e.id === userLogin.id && e.email === userLogin.email);
+  const [isLoading, setIsLoading] = useState(true);
+  const [originalUser, setOriginalUser] = useState(null);
+  const credentials = useSelector((state) => state.auth.credentials);
+  const token = credentials.token;
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    reset,
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      fullname: currentUser?.fullname || "",
-      email: currentUser?.email || "",
-      phone: currentUser?.phone || "",
-      newPassword: "",
-      confirmPassword: "",
-    },
   });
 
-  function handleChangeAcc(value) {
-    const { fullname, email, newPassword, phone } = value;
-
-    const newObj = {
-      ...currentUser,
-      fullname: fullname || currentUser.fullname,
-      email: email || currentUser.email,
-      password: newPassword ? window.btoa(newPassword) : currentUser.password,
-      phone: phone || currentUser.phone,
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+        const { data } = await http(token).get("/user");
+        setOriginalUser(data);
+        reset({
+          fullname: data.fullname || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      } catch (error) {
+        toast.error("Failed to fetch user data:", error.message);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    dispatch(updateUser(newObj));
-    toast.success("Account Settings Updated!")
+    if (token) {
+      fetchUserData();
+    }
+  }, [token, reset]);
+
+  async function handleChangeAcc(formData) {
+    try {
+      const payload = {};
+
+      if (formData.fullname !== originalUser.fullname) {
+        payload.fullname = formData.fullname;
+      }
+
+      if (formData.email !== originalUser.email) {
+        payload.email = formData.email;
+      }
+
+      if (formData.phone !== originalUser.phone) {
+        payload.phone = formData.phone;
+      }
+
+      if (formData.newPassword) {
+        payload.password = formData.newPassword;
+      }
+
+      if (Object.keys(payload).length > 0) {
+        await http(token).patch("/user", payload);
+        toast.success("Account settings updated!");
+
+        const { data } = await http(token).get("/user");
+        setOriginalUser(data);
+      } else {
+        toast("No changes detected", { icon: "ℹ️" });
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Update failed");
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p>Loading user data...</p>
+      </div>
+    );
   }
 
   return (
     <>
       <section className="bg-secondary w-full rounded-xl grid grid-cols-2">
-        <Toaster/>
         <Link to="/account-settings" className="text-center py-5 cursor-pointer font-medium border-b-third border-b-4 hover:opacity-70 transition-colors">
           Account Settings
         </Link>
@@ -130,8 +175,8 @@ const AccountSettings = () => {
             </div>
           </div>
         </section>
-        <button type="submit" className="bg-third py-3 px-15 hover:text-primary font-semibold cursor-pointer rounded-xl">
-          Update Changes
+        <button type="submit" disabled={isSubmitting} className={`bg-third py-3 px-15 hover:text-primary font-semibold cursor-pointer rounded-xl ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
+          {isSubmitting ? "Updating..." : "Update Changes"}
         </button>
       </form>
     </>

@@ -5,25 +5,65 @@ import { SlOptions } from "react-icons/sl";
 import { BsBookmarkStarFill } from "react-icons/bs";
 import { Outlet } from "react-router-dom";
 import React from "react";
+import http from "../utils/axios";
 
 const LayoutProfile = () => {
   const [currentUser, setCurrentUser] = React.useState(null);
-  const userLogin = useSelector((state) => state.auth.currentUser);
-  const checkDataUsers = useSelector((state) => state.users.users);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+  const credentials = useSelector((state) => state.auth.credentials);
 
   React.useEffect(() => {
-    if (userLogin !== null) {
-      const filtered = checkDataUsers.filter((e) => e.id === userLogin.id && userLogin.email === e.email)[0];
-      setCurrentUser(filtered || null);
-    } else {
-      setCurrentUser(null);
-    }
-  }, [userLogin, checkDataUsers]);
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+
+        if (!credentials || !credentials.token) {
+          throw new Error("User not authenticated");
+        }
+
+        const { data } = await http(credentials.token).get("/user");
+
+        if (!data) {
+          throw new Error("Invalid user data structure");
+        }
+
+        setCurrentUser(data.results);
+        setError(null);
+      } catch (err) {
+        setError(err.message || "Failed to fetch user data");
+        setCurrentUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [credentials]);
+
+  if (isLoading) {
+    return (
+      <main className="h-screen bg-primary flex justify-center items-center">
+        <p>Loading user data...</p>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="h-screen bg-primary flex flex-col justify-center items-center">
+        <p className="text-red-500">{error}</p>
+        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-third text-primary rounded">
+          Retry
+        </button>
+      </main>
+    );
+  }
 
   if (!currentUser) {
     return (
-      <main className="h-screen bg-primary">
-        <img src="../assets/loading.gif" alt="loading" />
+      <main className="h-screen bg-primary flex justify-center items-center">
+        <p>User not found</p>
       </main>
     );
   }
@@ -42,7 +82,7 @@ const LayoutProfile = () => {
             <div className="bg-[#EAEFEF] size-40 text-5xl text-primary flex items-center justify-center rounded-full font-bold">
               {currentUser.fullname ? currentUser.fullname.split("").slice(0, 2).join("").toUpperCase() : currentUser.email?.split("@")[0].split("").slice(0, 2).join("").toUpperCase() || "NA"}
             </div>
-            <p className="pt-7 pb-3 text-3xl font-semibold">{currentUser.fullname || currentUser.email?.split("@")[0] || "Anonymous"}</p>
+            <p className="pt-7 pb-3 text-3xl font-semibold">{currentUser?.fullname ? currentUser?.fullname : currentUser.email?.split("@")[0]}</p>
             <p className="text-xl text-third italic">Moviegoers</p>
           </div>
           <div>

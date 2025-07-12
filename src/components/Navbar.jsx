@@ -11,8 +11,20 @@ import http from "../utils/axios";
 
 const Navbar = () => {
   const [showHamburger, setShowHamburger] = useState(false);
+  const [user, setUser] = useState()
   const dispatch = useDispatch();    
-  const user = useSelector((state) => state.auth.credentials);
+  const credentials = useSelector((state) => state.auth.credentials);
+
+  async function getUserProfile(token){
+    const { data } = await http(token).get("/user");
+    if (data.success){
+      setUser(data.results)
+    }
+  }
+
+  React.useEffect(() => {
+    getUserProfile(credentials.token)
+  }, [])
 
   async function logoutEndpoint(token){
     const { data } = await http(token).post("/auth/logout", {
