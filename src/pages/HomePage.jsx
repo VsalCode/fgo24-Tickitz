@@ -4,7 +4,7 @@ import { RiCustomerService2Fill } from "react-icons/ri";
 import { MdStars } from "react-icons/md";
 import BenefitCard from "../components/BenefitCard";
 import NowShowingMovies from "../components/NowShowingMovies";
-// import UpcomingMovies from "../components/UpcomingMovies";
+import UpcomingMovies from "../components/UpcomingMovies";
 import Subscribe from "../components/Subscribe";
 
 const HomePage = () => {
@@ -38,7 +38,7 @@ const HomePage = () => {
           <BenefitCard text="24/7 Customer Support" icon={<RiCustomerService2Fill />} />
         </div>
       </section>
-      {/* <UpcomingMovies /> */}
+        <UpcomingMovies /> 
       <Subscribe />
     </>
   );
