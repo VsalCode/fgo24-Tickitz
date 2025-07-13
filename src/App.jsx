@@ -8,7 +8,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import OrderPage from "./pages/OrderPage";
 import Layout from "./layout/Layout";
-import Payment from "./pages/Payment";
+// import Payment from "./pages/Payment";
 import TicketResult from "./pages/TicketResult";
 import { Provider, useSelector } from "react-redux";
 import { store, persistor } from "./redux/store";
@@ -52,14 +52,14 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
-      {
-        path: "/payment/:queryId",
-        element: (
-          <PrivateRoute>
-            <Payment />
-          </PrivateRoute>
-        ),
-      },
+      // {
+      //   path: "/payment/:queryId",
+      //   element: (
+      //     <PrivateRoute>
+      //       <Payment />
+      //     </PrivateRoute>
+      //   ),
+      // },
       {
         path: "/ticket/:queryId",
         element: (
