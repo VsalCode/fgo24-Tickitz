@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { MdLogout } from "react-icons/md";
@@ -11,41 +11,72 @@ import http from "../utils/axios";
 
 const Navbar = () => {
   const [showHamburger, setShowHamburger] = useState(false);
-  const [user, setUser] = useState()
+  const [user, setUser] = useState(null); // Inisialisasi dengan null
   const dispatch = useDispatch();    
   const credentials = useSelector((state) => state.auth.credentials);
 
-  async function getUserProfile(token){
-    const { data } = await http(token).get("/user");
-    if (data.success){
-      setUser(data.results)
+  async function getUserProfile(token) {
+    try {
+      const { data } = await http(token).get("/user");
+      if (data.success) {
+        setUser(data.results);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user profile", error);
     }
   }
 
-  React.useEffect(() => {
-    getUserProfile(credentials.token)
-  }, [])
+  useEffect(() => {
+    if (credentials && credentials.token) {
+      getUserProfile(credentials.token);
+    } else {
+      setUser(null);
+    }
+  }, [credentials]);
 
-  async function logoutEndpoint(token){
-    const { data } = await http(token).post("/auth/logout", {
-      }, {
-        headers: {
-          "Content-Type": "application/json"
-        }
+  async function logoutEndpoint(token) {
+    try {
+      const { data } = await http(token).post("/auth/logout", {}, {
+        headers: { "Content-Type": "application/json" }
       });
-    
+      
       if (!data.success) {
         toast.error(data.message || "Logout failed!");
         return null;
       }
       return data.results;
+    } catch (error) {
+      toast.error("Logout failed due to network error", error.message);
+      return null;
+    }
   }
 
-  function handleLogout() {
-    dispatch(authActions(null));
-    logoutEndpoint(user.token)
-    toast.success("Logout Success!");
+  async function handleLogout() {
+    try {
+      if (credentials?.token) {
+        await logoutEndpoint(credentials.token);
+      }
+      dispatch(authActions(null));
+      setUser(null); // Reset user state
+      toast.success("Logout Success!");
+    } catch (error) {
+      toast.error("Logout failed!", error.message);
+    }
   }
+
+  const getUserInitials = () => {
+    if (user?.fullname) {
+      return user.fullname.slice(0, 2).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return "??";
+  };
+
+  const getDisplayName = () => {
+    return user?.fullname || user?.email?.split('@')[0] || "User";
+  };
 
   return (
     <nav className="bg-secondary text-white z-100 fixed left-0 right-0 top-0 md:shadow shadow-xl  h-100px md:px-15 sm:px-10 px-7 py-3">
@@ -62,10 +93,10 @@ const Navbar = () => {
         {user ? (
           <div className="md:flex md:items-center md:gap-3 hidden">
             <div className="bg-[#EAEFEF] size-9 text-primary flex items-center justify-center rounded-full font-bold">
-              {user.fullname ? user.fullname.split("").slice(0, 2).join("").toUpperCase() : user.email?.split("@").splice(0, 1).join("").split("").slice(0, 2).join("").toUpperCase()}
+              {getUserInitials()}
             </div>
             <div>
-              <p className="text-xl">{user?.fullname ? user.fullname : user.email?.split("@").splice(0, 1)}</p>
+              <p className="text-xl">{getDisplayName()}</p>
               <Link to="/account-settings" className="text-sm mb-[-5px] text-third">
                 account settings
               </Link>
@@ -87,27 +118,31 @@ const Navbar = () => {
 
         <button
           className="cursor-pointer md:hidden text-2xl"
-          onClick={() => {
-            setShowHamburger(!showHamburger);
-          }}
+          onClick={() => setShowHamburger(!showHamburger)}
         >
-          {showHamburger === false ? <GiHamburgerMenu /> : <IoClose />}
+          {showHamburger ? <IoClose /> : <GiHamburgerMenu />}
         </button>
       </div>
-      {showHamburger === true && (
-        <div className=" flex flex-col h-fit rounded-b-xl text-center text-base font-bold py-7 gap-5">
-          <Link to="/">HOME</Link>
-          <Link to="/movies">MOVIE</Link>
-          <Link to="/movies">BUY TICKET</Link>
+      
+      {showHamburger && (
+        <div className="flex flex-col h-fit rounded-b-xl text-center text-base font-bold py-7 gap-5">
+          <Link to="/" onClick={() => setShowHamburger(false)}>HOME</Link>
+          <Link to="/movies" onClick={() => setShowHamburger(false)}>MOVIE</Link>
+          <Link to="/movies" onClick={() => setShowHamburger(false)}>BUY TICKET</Link>
+          
           {user ? (
             <div className="flex-between gap-3 bg-primary p-5 rounded-2xl">
               <div className="flex items-center gap-4">
                 <div className="bg-[#EAEFEF] size-9 text-primary flex items-center justify-center rounded-full font-bold">
-                  {user.fullname ? user.fullname.split("").slice(0, 2).join("").toUpperCase() : user.email?.split("@").splice(0, 1).join("").split("").slice(0, 2).join("").toUpperCase()}
+                  {getUserInitials()}
                 </div>
                 <div className="flex flex-col items-start">
-                  <p className="text-xl">{user?.fullname ? user.fullname : user.email?.split("@").splice(0, 1)}</p>
-                  <Link to="/account-settings" className="text-sm mb-[-5px] text-third">
+                  <p className="text-xl">{getDisplayName()}</p>
+                  <Link 
+                    to="/account-settings" 
+                    className="text-sm mb-[-5px] text-third"
+                    onClick={() => setShowHamburger(false)}
+                  >
                     account settings
                   </Link>
                 </div>
@@ -120,10 +155,18 @@ const Navbar = () => {
             </div>  
           ) : (
             <div className="flex-between gap-3">
-              <Link to="/login" className="grow universal-button border text-base">
+              <Link 
+                to="/login" 
+                className="grow universal-button border text-base"
+                onClick={() => setShowHamburger(false)}
+              >
                 LOGIN
               </Link>
-              <Link to="/signup" className="grow universal-button bg-third text-primary text-base">
+              <Link 
+                to="/signup" 
+                className="grow universal-button bg-third text-primary text-base"
+                onClick={() => setShowHamburger(false)}
+              >
                 SIGN UP
               </Link>
             </div>
