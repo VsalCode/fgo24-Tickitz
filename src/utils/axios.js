@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseUrl = "http://146.190.102.54:9403"
+const baseUrl = "http://localhost:8080"
 
 function http(token = null) {
   const headers = {};

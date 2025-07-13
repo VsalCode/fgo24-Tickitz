@@ -82,7 +82,6 @@ async function handleLogin(dataLogin) {
   }, 2000);
 }
 
-
   return (
     <main className="sm:bg-sixth sm:bg-primary bg-white h-fit py-10 flex-center flex-col font-sans">
       <Toaster />

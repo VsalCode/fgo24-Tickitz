@@ -1,36 +1,104 @@
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
-import { useDispatch } from "react-redux";
-import { addMovieActions } from "../redux/reducer/admin";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { nanoid } from "@reduxjs/toolkit";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ValidationMovies } from "../components/ValidationMovies";
+import CreatableSelect from "react-select/creatable";
+import http from "../utils/axios";
 
 const AddMovie = () => {
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(ValidationMovies),
+    defaultValues: {
+      genres: [],
+      directors: [],
+      casts: [],
+    }
   });
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const credentials = useSelector((state) => state.auth.credentials);
+  const token = credentials.token;
+  
+
+  // const stringToOptions = (str) => 
+  //   str ? str.split(',').map(item => ({ value: item.trim(), label: item.trim() })) : [];
+
+  const optionsToIds = (options) => options.map(opt => opt.value);
+
+  async function addMovieEndpoint(movie){
+    const { data } = await http(token).post("/auth/login", movie, {
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+
+  if (data.success){
+    return data.message
+  }
+  }
 
   const handleAddMovie = (data) => {
     const movie = {
-      ...data,
       id: nanoid(),
-      genre: data.genre.trim(),
+      backdrop_path: data.backdrop,
+      casts: optionsToIds(data.casts),
+      directors: optionsToIds(data.directors),
+      genres: optionsToIds(data.genres),
+      overview: data.overview,
+      poster_path: data.poster,
+      release_date: data.release_date,
+      runtime: parseInt(data.runtime),
+      title: data.title,
+      vote_average: parseFloat(data.vote_average),
     };
 
-    dispatch(addMovieActions(movie));
-    toast.success("Success Add New Movie!");
+    const response = addMovieEndpoint(movie)
+    toast.success(`${response}`);
 
     setTimeout(() => {
       navigate("/movies-admin");
     }, 2000);
+  };
+
+  const customStyles = {
+    control: (base) => ({
+      ...base,
+      backgroundColor: '#283246',
+      border: 'none',
+      borderRadius: '12px',
+      minHeight: '48px',
+    }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: '#3a4a6b',
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      color: 'white',
+    }),
+    input: (base) => ({
+      ...base,
+      color: 'white',
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: '#a0aec0',
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: '#283246',
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? '#3a4a6b' : '#283246',
+      color: 'white',
+    }),
   };
 
   return (
@@ -40,32 +108,61 @@ const AddMovie = () => {
 
       <div className="flex sm:flex-row flex-col gap-4">
         <div className="flex-1">
-          <InputAddMovie {...register("poster")} errors={errors.poster?.message && <p className="text-red-400 text-sm italic">{errors.poster.message}</p>} label="Poster URL" id="poster" placeholder="Input Poster URL" />
-        </div>
-        <div className="flex-1">
-          <InputAddMovie {...register("backdrop")} errors={errors.backdrop?.message && <p className="text-red-400 text-sm italic">{errors.backdrop.message}</p>} label="Backdrop URL" id="backdrop" placeholder="Input Backdrop Image URL" />
-        </div>
-      </div>
-
-      <InputAddMovie {...register("title")} errors={errors.title?.message && <p className="text-red-400 text-sm italic">{errors.title.message}</p>} label="Movie Name" id="movieName" placeholder="Input Movie Name" />
-
-      <div className="flex sm:flex-row flex-col gap-4">
-        <div className="flex-1">
-          <InputAddMovie
-            {...register("genre")}
-            errors={errors.genre?.message && <p className="text-red-400 text-sm italic">{errors.genre.message}</p>}
-            label="Category / Genres"
-            id="category"
-            placeholder="Input Movie Category / Genres (e.g., Action, Comedy)"
+          <InputAddMovie 
+            name="poster" 
+            control={control}
+            errors={errors.poster?.message && <p className="text-red-400 text-sm italic">{errors.poster.message}</p>} 
+            label="Poster URL" 
+            placeholder="Input Poster URL" 
           />
         </div>
         <div className="flex-1">
-          <InputAddMovie
-            {...register("vote_average")}
-            errors={errors.vote_average?.message && <p className="text-red-400 text-sm italic">{errors.vote_average.message}</p>}
-            label="Rating"
-            id="rating"
-            placeholder="Movie Rating (0-10)"
+          <InputAddMovie 
+            name="backdrop" 
+            control={control}
+            errors={errors.backdrop?.message && <p className="text-red-400 text-sm italic">{errors.backdrop.message}</p>} 
+            label="Backdrop URL" 
+            placeholder="Input Backdrop Image URL" 
+          />
+        </div>
+      </div>
+
+      <InputAddMovie 
+        name="title" 
+        control={control}
+        errors={errors.title?.message && <p className="text-red-400 text-sm italic">{errors.title.message}</p>} 
+        label="Movie Name" 
+        placeholder="Input Movie Name" 
+      />
+
+      <div className="flex sm:flex-row flex-col gap-4">
+        <div className="flex-1">
+          <div className="flex flex-col gap-4">
+            <label>Category / Genres</label>
+            <Controller
+              name="genres"
+              control={control}
+              render={({ field }) => (
+                <CreatableSelect
+                  {...field}
+                  isMulti
+                  styles={customStyles}
+                  placeholder="Input Movie Category / Genres (e.g., Action, Comedy)"
+                  onChange={(selected) => field.onChange(selected)}
+                  value={field.value}
+                />
+              )}
+            />
+            {errors.genres?.message && <p className="text-red-400 text-sm italic">{errors.genres.message}</p>}
+          </div>
+        </div>
+        <div className="flex-1">
+          <InputAddMovie 
+            name="vote_average" 
+            control={control}
+            errors={errors.vote_average?.message && <p className="text-red-400 text-sm italic">{errors.vote_average.message}</p>} 
+            label="Rating" 
+            placeholder="Movie Rating (0-10)" 
             type="number"
             step="0.1"
           />
@@ -74,35 +171,71 @@ const AddMovie = () => {
 
       <div className="flex sm:flex-row flex-col gap-4">
         <div className="flex-1">
-          <InputAddMovie
-            {...register("release_date")}
-            errors={errors.release_date?.message && <p className="text-red-400 text-sm italic">{errors.release_date.message}</p>}
-            label="Release Date"
-            id="release_date"
-            placeholder="Input Release Date (YYYY-MM-DD)"
+          <InputAddMovie 
+            name="release_date" 
+            control={control}
+            errors={errors.release_date?.message && <p className="text-red-400 text-sm italic">{errors.release_date.message}</p>} 
+            label="Release Date" 
+            placeholder="Input Release Date (YYYY-MM-DD)" 
             type="date"
           />
         </div>
         <div className="flex-1">
-          <InputAddMovie
-            {...register("runtime")}
-            errors={errors.runtime?.message && <p className="text-red-400 text-sm italic">{errors.runtime.message}</p>}
-            label="Duration (Minutes)"
-            id="duration"
-            placeholder="Input Movie Duration"
+          <InputAddMovie 
+            name="runtime" 
+            control={control}
+            errors={errors.runtime?.message && <p className="text-red-400 text-sm italic">{errors.runtime.message}</p>} 
+            label="Duration (Minutes)" 
+            placeholder="Input Movie Duration" 
             type="number"
           />
         </div>
       </div>
 
-      <InputAddMovie {...register("director")} errors={errors.director?.message && <p className="text-red-400 text-sm italic">{errors.director.message}</p>} label="Director Name" id="director" placeholder="Input Director Name" />
-      <InputAddMovie {...register("cast")} errors={errors.cast?.message && <p className="text-red-400 text-sm italic">{errors.cast.message}</p>} label="Cast" id="cast" placeholder="Input Cast Names (e.g., Actor 1, Actor 2)" />
+      <div className="flex flex-col gap-4">
+        <label>Director Name</label>
+        <Controller
+          name="directors"
+          control={control}
+          render={({ field }) => (
+            <CreatableSelect
+              {...field}
+              isMulti
+              styles={customStyles}
+              placeholder="Input Director Name (e.g., Christopher Nolan)"
+              onChange={(selected) => field.onChange(selected)}
+              value={field.value}
+            />
+          )}
+        />
+        {errors.directors?.message && <p className="text-red-400 text-sm italic">{errors.directors.message}</p>}
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <label>Cast</label>
+        <Controller
+          name="casts"
+          control={control}
+          render={({ field }) => (
+            <CreatableSelect
+              {...field}
+              isMulti
+              styles={customStyles}
+              placeholder="Input Cast Names (e.g., Tom Hanks, Emma Watson)"
+              onChange={(selected) => field.onChange(selected)}
+              value={field.value}
+            />
+          )}
+        />
+        {errors.casts?.message && <p className="text-red-400 text-sm italic">{errors.casts.message}</p>}
+      </div>
+
       <InputAddMovie
-        {...register("overview")}
+        name="overview"
+        control={control}
         errors={errors.overview?.message && <p className="text-red-400 text-sm italic">{errors.overview.message}</p>}
         type="textarea"
-        label="overview"
-        id="overview"
+        label="Overview"
         placeholder="Input Movie overview"
       />
 
@@ -113,14 +246,38 @@ const AddMovie = () => {
   );
 };
 
-const InputAddMovie = ({ label, id, type = "text", placeholder, errors, ...props }) => {
+const InputAddMovie = ({ name, control, label, type = "text", placeholder, errors, ...props }) => {
   return (
     <div className="flex flex-col gap-4">
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={name}>{label}</label>
       {type === "textarea" ? (
-        <textarea className="p-3 bg-[#283246] rounded-xl" name={id} id={id} rows={7} placeholder={placeholder} {...props} />
+        <Controller
+          name={name}
+          control={control}
+          render={({ field }) => (
+            <textarea
+              {...field}
+              className="p-3 bg-[#283246] rounded-xl"
+              rows={7}
+              placeholder={placeholder}
+              {...props}
+            />
+          )}
+        />
       ) : (
-        <input id={id} type={type} placeholder={placeholder} className="p-3 bg-[#283246] rounded-xl" {...props} />
+        <Controller
+          name={name}
+          control={control}
+          render={({ field }) => (
+            <input
+              {...field}
+              type={type}
+              placeholder={placeholder}
+              className="p-3 bg-[#283246] rounded-xl"
+              {...props}
+            />
+          )}
+        />
       )}
       {errors}
     </div>
