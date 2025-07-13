@@ -53,6 +53,7 @@ const MovieDetail = () => {
 
     const bookTicket = {
       idTransaction: idTransaction,
+      movieId: id,
       title: data.title,
       genres: data.genres,
       cinema: cinema,
