@@ -3,11 +3,10 @@ import { MdCalendarToday } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
 import { HiOutlineTrash } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { removeMovieActions } from "../redux/reducer/admin";
+import { useSelector } from "react-redux";
 
 const MovieAdmin = () => {
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const listMovie = useSelector((state) => state.admin.listMovie);
 
   return (
@@ -59,7 +58,7 @@ const MovieAdmin = () => {
                     <FaRegEdit />
                   </Link>
                   <button
-                    onClick={() => dispatch(removeMovieActions(movie.id))}
+                    // onClick={() => dispatch(removeMovieActions(movie.id))}
                     className="cursor-pointer bg-error text-white p-1 rounded-sm hover:bg-red-700"
                   >
                     <HiOutlineTrash className="text-2xl" />

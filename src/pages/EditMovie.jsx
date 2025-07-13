@@ -1,14 +1,13 @@
 import { useForm } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
-import { useDispatch, useSelector } from "react-redux";
-import { editMovieActions } from "../redux/reducer/admin";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ValidationMovies } from "../components/ValidationMovies";
 
 const EditMovie = () => {
   const { id } = useParams();
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const nav = useNavigate();
   const movie = useSelector((state) => state.admin.listMovie.find((m) => m.id === id));
 
@@ -22,7 +21,8 @@ const EditMovie = () => {
   });
 
   const handleEditMovie = (data) => {
-    dispatch(editMovieActions({ id, movie: data }));
+    // dispatch(editMovieActions({ id, movie: data }));
+    console.log(data)
     toast.success("Movie updated successfully!");
     setTimeout(() => {
       nav("/movies-admin");
