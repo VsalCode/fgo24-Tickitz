@@ -43,12 +43,12 @@ jobs:
             echo "Pulling latest image from GHCR..."
             echo "${{ secrets.APP_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ghcr.io/vsalcode/fgo24-react-cinevo:latest
-            echo "Stopping existing container..."
+            echo "Stopping and removing existing containers..."
             docker compose down || true
-            echo "Checking port 9402..."
+            echo "Checking for port conflicts..."
             if sudo lsof -i :9402; then
               echo "Freeing port 9402..."
               sudo kill -9 $(sudo lsof -t -i :9402) || true
             fi
-            echo "Starting Docker Compose..."
+            echo "Starting new deployment..."
             docker compose up -d

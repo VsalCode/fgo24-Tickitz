@@ -2,6 +2,6 @@ service:
   cinevo:
     image: ghcr.io/vsalcode/fgo24-react-cinevo:latest
     environment:
-      - VITE_TMDB_API_KEY=${VITE_TMDB_API_KEY}
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     ports:
       - "9402:80" 
