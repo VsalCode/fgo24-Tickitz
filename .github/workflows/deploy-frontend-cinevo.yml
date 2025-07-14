@@ -1,49 +1,49 @@
-# name: Push Frontend Image to GHCR and Deploy to VPS
-# run-name: Release Image GHCR
+name: Push Frontend Image to GHCR and Deploy to VPS
+run-name: Release Image GHCR
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   build-and-push:
-#     name: Build & Push Docker Image to GHCR
-#     runs-on: ubuntu-latest
+jobs:
+  build-and-push:
+    name: Build & Push Docker Image to GHCR
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v4
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-#       - name: Log in to GitHub Container Registry
-#         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-#       - name: Build Docker Image
-#         run: |
-#           docker build --build-arg VITE_TMDB_API_KEY=${{ secrets.VITE_TMDB_API_KEY }} -t ghcr.io/vsalcode/fgo24-react-cinevo:latest .
+      - name: Build Docker Image
+        run: |
+          docker build --build-arg VITE_TMDB_API_KEY=${{ secrets.VITE_TMDB_API_KEY }} -t ghcr.io/vsalcode/fgo24-react-cinevo:latest .
 
-#       - name: Push Docker Image to GHCR
-#         run: |
-#           docker push ghcr.io/vsalcode/fgo24-react-cinevo:latest
+      - name: Push Docker Image to GHCR
+        run: |
+          docker push ghcr.io/vsalcode/fgo24-react-cinevo:latest
 
-#   deploy:
-#     name: Deploy to VPS
-#     needs: build-and-push
-#     runs-on: ubuntu-latest
+  deploy:
+    name: Deploy to VPS
+    needs: build-and-push
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Connect & Deploy to VPS
-#         uses: appleboy/ssh-action@v0.1.10
-#         with:
-#           host: 146.190.102.54
-#           username: faisal
-#           key: ${{ secrets.SSH_PRIVATE_KEY }}
-#           port: 9401
-#           script: |
-#             echo "Pulling latest image from GHCR..."
-#             docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.APP_TOKEN }}
-#             docker pull ghcr.io/vsalcode/fgo24-react-cinevo:latest
-#             echo "Stopping existing container..."
-#             docker compose down || true
-#             echo "Starting Docker Compose..."
-#             docker compose up -d
+    steps:
+      - name: Connect & Deploy to VPS
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 146.190.102.54
+          username: faisal
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 9401
+          script: |
+            echo "Pulling latest image from GHCR..."
+            docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.APP_TOKEN }}
+            docker pull ghcr.io/vsalcode/fgo24-react-cinevo:latest
+            echo "Stopping existing container..."
+            docker compose down || true
+            echo "Starting Docker Compose..."
+            docker compose up -d
