@@ -20,7 +20,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build --build-arg VITE_TMDB_API_KEY=${{ secrets.VITE_TMDB_API_KEY }} -t ghcr.io/vsalcode/fgo24-react-cinevo:latest .
+          docker build --build-arg VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }} -t ghcr.io/vsalcode/fgo24-react-cinevo:latest .
 
       - name: Push Docker Image to GHCR
         run: |
@@ -41,9 +41,14 @@ jobs:
           port: 9401
           script: |
             echo "Pulling latest image from GHCR..."
-            docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.APP_TOKEN }}
+            echo "${{ secrets.APP_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ghcr.io/vsalcode/fgo24-react-cinevo:latest
             echo "Stopping existing container..."
             docker compose down || true
+            echo "Checking port 9402..."
+            if sudo lsof -i :9402; then
+              echo "Freeing port 9402..."
+              sudo kill -9 $(sudo lsof -t -i :9402) || true
+            fi
             echo "Starting Docker Compose..."
             docker compose up -d
