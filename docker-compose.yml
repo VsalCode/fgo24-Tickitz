@@ -1,5 +1,0 @@
-services:
-  cinevo:
-    image: ghcr.io/vsalcode/fgo24-react-cinevo:latest
-    ports:
-      - "9402:80"

@@ -1,17 +1,13 @@
-# Stage 1: Build the React application
-FROM node:lts-alpine AS build
+FROM node:lts-alpine
 
 WORKDIR /workspace
 
-ARG VITE_API_BASE_URL
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-
-COPY package*.json . 
+COPY package*.json .
 RUN npm install
 COPY . .
 RUN npm run build
 
 FROM nginx:latest
+COPY --from=0 /workspace/dist/ /usr/share/nginx/html/
 
-COPY --from=build /workspace/dist/ /usr/share/nginx/html/
 EXPOSE 80

@@ -1,58 +1,43 @@
-name: Push Frontend Image to GHCR and Deploy to VPS
-run-name: Release Image GHCR
-
+name: Deploy Frontend to GHCR
 on:
   push:
     branches:
       - main
-
-permissions:
-  contents: read
-  packages: write
-
 jobs:
-  build-and-push:
-    name: Build & Push Docker Image to GHCR
+  deploy-frontend:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - name: Checkout Code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Create .env.production
+        run: echo "${{ secrets.VITE_API_BASE_URL }}" > .env.production
 
-      - name: Build Docker Image
-        run: |
-          docker build --build-arg VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }} -t ghcr.io/vsalcode/fgo24-react-cinevo:latest .
-
-      - name: Push Docker Image to GHCR
-        run: |
-          docker push ghcr.io/vsalcode/fgo24-react-cinevo:latest
-
-  deploy:
-    name: Deploy to VPS
-    needs: build-and-push
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Connect & Deploy to VPS
-        uses: appleboy/ssh-action@v0.1.10
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
         with:
-          host: ${{ secrets.VPS_HOST }} 
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/vsalcode/fgo24-react-cinevo:latest
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
           username: faisal
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 9401
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "Pulling latest image from GHCR..."
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ghcr.io/vsalcode/fgo24-react-cinevo:latest
-            echo "Stopping and removing existing containers..."
-            docker compose down || true
-            echo "Checking for port conflicts..."
-            if sudo lsof -i :9402; then
-              echo "Freeing port 9402..."
-              sudo kill -9 $(sudo lsof -t -i :9402) || true
-            fi
-            echo "Starting new deployment..."
-            docker compose up -d
+            docker rm -f cinevo || true
+            docker run -d -p 9402:80 --name cinevo ghcr.io/vsalcode/fgo24-react-cinevo:latest
