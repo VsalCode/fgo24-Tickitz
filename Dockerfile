@@ -3,8 +3,8 @@ FROM node:lts-alpine AS build
 
 WORKDIR /workspace
 
-ARG VITE_TMDB_API_KEY
-ENV VITE_TMDB_API_KEY=$VITE_TMDB_API_KEY
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 COPY package*.json . 
 RUN npm install

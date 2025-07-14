@@ -1,7 +1,5 @@
-service:
+services:
   cinevo:
     image: ghcr.io/vsalcode/fgo24-react-cinevo:latest
-    environment:
-      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     ports:
-      - "9402:80" 
+      - "9402:80"

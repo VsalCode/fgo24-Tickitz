@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-push:
     name: Build & Push Docker Image to GHCR
@@ -35,13 +39,13 @@ jobs:
       - name: Connect & Deploy to VPS
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: 146.190.102.54
+          host: ${{ secrets.VPS_HOST }} 
           username: faisal
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 9401
           script: |
             echo "Pulling latest image from GHCR..."
-            echo "${{ secrets.APP_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ghcr.io/vsalcode/fgo24-react-cinevo:latest
             echo "Stopping and removing existing containers..."
             docker compose down || true
