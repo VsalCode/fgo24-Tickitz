@@ -5,57 +5,27 @@ import { SlOptions } from "react-icons/sl";
 import { BsBookmarkStarFill } from "react-icons/bs";
 import { Outlet } from "react-router-dom";
 import React from "react";
-import http from "../utils/axios";
 
 const LayoutProfile = () => {
   const [currentUser, setCurrentUser] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
   const token = useSelector((state) => state.auth.token);
+  const user = useSelector((state) => state.user.user)
 
   React.useEffect(() => {
-    const fetchUserData = async () => {
-      try {
         setIsLoading(true);
 
         if (!token) {
           throw new Error("User not authenticated");
         }
-
-        const { data } = await http(token).get("/user");
-
-        if (!data) {
-          throw new Error("Invalid user data structure");
-        }
-
-        setCurrentUser(data.results);
-        setError(null);
-      } catch (err) {
-        setError(err.message || "Failed to fetch user data");
-        setCurrentUser(null);
-      } finally {
+        setCurrentUser(user);
         setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [token]);
+  }, [token, user]);
 
   if (isLoading) {
     return (
       <main className="h-screen bg-primary flex justify-center items-center">
         <p>Loading user data...</p>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="h-screen bg-primary flex flex-col justify-center items-center">
-        <p className="text-red-500">{error}</p>
-        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-third text-primary rounded">
-          Retry
-        </button>
       </main>
     );
   }

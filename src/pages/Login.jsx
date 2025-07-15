@@ -6,12 +6,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { useForm } from "react-hook-form";
-import { useDispatch} from "react-redux";
+import { useDispatch } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { authActions } from "../redux/reducer/auth";
-import { currentUserActions } from "../redux/reducer/user"
+import { currentUserActions } from "../redux/reducer/user";
 import http from "../utils/axios";
 
 const schema = yup
@@ -32,57 +32,77 @@ const Login = () => {
   });
   const dispatch = useDispatch();
   const nav = useNavigate();
+  const [isLoading, setIsLoading] = useState(false); 
 
-async function getUserToken(dataLogin) {
-  const { data } = await http().post("/auth/login", {
-    email: dataLogin.email,
-    password: dataLogin.password,
-  }, {
-    headers: {
-      "Content-Type": "application/json"
+  async function getUserToken(dataLogin) {
+    try {
+      const { data } = await http().post(
+        "/auth/login",
+        {
+          email: dataLogin.email,
+          password: dataLogin.password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!data.success) {
+        toast.error(data.message || "Login failed!");
+        return null;
+      }
+      return data.results;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "An unexpected error occurred";
+      toast.error(errorMessage);
+      return null;
     }
-  });
-
-  if (!data.success) {
-    toast.error(data.message || "Login failed!");
-    return null;
-  }
-  return data.results; 
-}
-
-async function getUserProfile(token) {
-  const { data } = await http(token).get("/user");
-
-  if (!data.success) {
-    toast.error(data.message || "Failed to fetch user profile!");
-    return null; 
-  }
-  return data.results;
-}
-
-async function handleLogin(dataLogin) {
-  const tokenData = await getUserToken(dataLogin);  
-  if (!tokenData) {
-    toast.error("Login failed!");
-    return;
   }
 
-  const result = await getUserProfile(tokenData); 
-  if (!result) {
-    toast.error("Failed to fetch user profile!");
-    return;
+  async function getUserProfile(token) {
+    try {
+      const { data } = await http(token).get("/user");
+
+      if (!data.success) {
+        toast.error(data.message || "Failed to fetch user profile!");
+        return null;
+      }
+      return data.results;
+    } catch (error) {
+      console.log(error.message);
+      toast.error("Failed to load user profile");
+      return null;
+    }
   }
 
-  dispatch(authActions(tokenData));
-  dispatch(currentUserActions({ email: result.email, role: result.roles }))
+  async function handleLogin(dataLogin) {
+    setIsLoading(true); 
 
-  toast.success("Login Successfully!");
+    const tokenData = await getUserToken(dataLogin);
+    if (!tokenData) {
+      setIsLoading(false);
+      return;
+    }
 
-  const redirectPath = result.roles.includes("admin") ? "/dashboard-admin" : "/";
-  setTimeout(() => {
-    nav(redirectPath);
-  }, 2000);
-}
+    const result = await getUserProfile(tokenData);
+    if (!result) {
+      setIsLoading(false);
+      return;
+    }
+
+    dispatch(authActions(tokenData));
+    dispatch(currentUserActions({ email: result.email, role: result.roles }));
+    toast.success("Login Successfully!");
+
+    const redirectPath = result.roles.includes("admin") ? "/dashboard-admin" : "/";
+    setTimeout(() => {
+      setIsLoading(false); 
+      nav(redirectPath);
+    }, 2000);
+  }
+
 
   return (
     <main className="sm:bg-sixth sm:bg-primary bg-white h-fit py-10 flex-center flex-col font-sans">
@@ -103,8 +123,14 @@ async function handleLogin(dataLogin) {
             <label htmlFor="password">Password</label>
             <span className="flex items-center gap-4 border sm:px-5 px-2 py-3 rounded-lg w-full">
               <TbLockPassword className="sm:text-xl text-base" />
-              <input {...register("password")} type={showPassword === false ? "password" : "text"} className="border-0 outline-none grow sm:text-base text-sm" name="password" placeholder="Enter your password"/>
-              <button type="button" className="cursor-pointer text-xl" onClick={() => { setShowPassword(!showPassword) }}>
+              <input {...register("password")} type={showPassword === false ? "password" : "text"} className="border-0 outline-none grow sm:text-base text-sm" name="password" placeholder="Enter your password" />
+              <button
+                type="button"
+                className="cursor-pointer text-xl"
+                onClick={() => {
+                  setShowPassword(!showPassword);
+                }}
+              >
                 {showPassword === false ? <LuEye className="sm:text-xl text-base" /> : <LuEyeClosed className="sm:text-xl text-base" />}
               </button>
             </span>
@@ -114,8 +140,15 @@ async function handleLogin(dataLogin) {
             <Link>Forgot Your Password?</Link>
           </div>
           <div className="text-center font-medium sm:text-base text-sm">
-            <button type="submit" className="cursor-pointer bg-third w-full text-primary font-bold  py-3 rounded-lg mb-5 hover:bg-secondary hover:text-white transition-colors">
-              LOGIN
+            <button type="submit" className="cursor-pointer bg-third w-full text-primary font-bold py-3 rounded-lg mb-5 hover:bg-secondary hover:text-white transition-colors flex justify-center items-center" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                  Processing...
+                </>
+              ) : (
+                "LOGIN"
+              )}
             </button>
             <p>
               Do Not Have an Account?{" "}

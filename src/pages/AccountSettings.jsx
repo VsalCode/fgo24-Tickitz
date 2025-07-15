@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { LuEye, LuEyeClosed } from "react-icons/lu";
 import { useState, useEffect } from "react";
@@ -7,6 +7,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import toast from "react-hot-toast";
 import http from "../utils/axios";
+import { currentUserActions } from "../redux/reducer/user"
 
 const schema = yup.object().shape({
   fullname: yup.string().optional(),
@@ -28,6 +29,7 @@ const AccountSettings = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [originalUser, setOriginalUser] = useState(null);
+  const dispatch = useDispatch()
   const token = useSelector((state) => state.auth.token);
 
   const {
@@ -85,6 +87,7 @@ const AccountSettings = () => {
       }
 
       if (Object.keys(payload).length > 0) {
+        dispatch(currentUserActions(payload))
         await http(token).patch("/user", payload);
         toast.success("Account settings updated!");
 

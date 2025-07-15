@@ -8,10 +8,7 @@ import { FaFacebook } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-// import { addUser } from "../redux/reducer/users";
 import toast, { Toaster } from "react-hot-toast";
-// import { useDispatch, useSelector } from "react-redux";
-// import { nanoid } from "@reduxjs/toolkit";
 import http from "../utils/axios";
 
 const schema = yup
@@ -38,10 +35,8 @@ const SignUp = () => {
       agreeToTerms: false,
     },
   });
-  // let dataRegistUsers = useSelector((state) => state.users.users);
-  // const dispatch = useDispatch();
   const nav = useNavigate();
-  // console.log("agreeToTerms:", watch("agreeToTerms"));
+  const [isLoading, setIsLoading] = useState(false);
 
   function handleShowPassword(e) {
     e.preventDefault();
@@ -49,46 +44,51 @@ const SignUp = () => {
   }
 
   async function handleRegister(dataRegister) {
-  try {
-    const { data } = await http().post("/auth/register", {
-      email: dataRegister.email,
-      password: dataRegister.password,
-      confirmPassword: dataRegister.confirmPassword,
-    }, {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
+    setIsLoading(true);
+    try {
+      const { data } = await http().post(
+        "/auth/register",
+        {
+          email: dataRegister.email,
+          password: dataRegister.password,
+          confirmPassword: dataRegister.confirmPassword,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    if (data.success) {
-      console.log(data.message);
-      toast.success(data.message);
-      setTimeout(() => {
-        nav("/login");
-      }, 2000);
-    } else {
-      toast.error(data.message || "Registration failed!");
-    }
-  } catch (error) {
-    console.error(error);
-
-    if (error.response) {
-      const status = error.response.status;
-      const message = error.response.data.message ;
-
-      if (status === 400) {
-        toast.error(`Bad Request: ${message}`);
-      } else if (status === 500) {
-        toast.error(`Internal Server Error: ${message}`);
+      if (data.success) {
+        console.log(data.message);
+        toast.success(data.message);
+        setTimeout(() => {
+          setIsLoading(false);
+          nav("/login");
+        }, 2000);
       } else {
-        toast.error(`Error: ${message}`);
+        toast.error(data.message || "Registration failed!");
       }
-    } else {
-      toast.error("No response from server. Please try again later.");
+    } catch (error) {
+      console.error(error);
+
+      if (error.response) {
+        const status = error.response.status;
+        const message = error.response.data.message;
+
+        if (status === 400) {
+          toast.error(`Bad Request: ${message}`);
+        } else if (status === 500) {
+          toast.error(`Internal Server Error: ${message}`);
+        } else {
+          toast.error(`Error: ${message}`);
+        }
+      } else {
+        toast.error("No response from server. Please try again later.");
+      }
     }
   }
-  }
-
 
   return (
     <main className="sm:bg-sixth sm:bg-primary bg-white h-fit py-5 flex-center flex-col font-sans">
@@ -139,8 +139,15 @@ const SignUp = () => {
           </div>
           {errors.agreeToTerms && <p className="text-error text-sm italic pt-1">{errors.agreeToTerms.message}</p>}
           <div className="text-center font-medium sm:text-base text-sm pt-3">
-            <button type="submit" className="bg-third font-bold w-full text-secondary py-3 rounded-lg mb-5 cursor-pointer hover:bg-secondary hover:text-white transition-colors">
-              JOIN
+            <button type="submit" className="cursor-pointer bg-third w-full text-primary font-bold py-3 rounded-lg mb-5 hover:bg-secondary hover:text-white transition-colors flex justify-center items-center" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                  Processing...
+                </>
+              ) : (
+                "JOIN"
+              )}
             </button>
             <p>
               Already Have an Account?{" "}
