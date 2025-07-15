@@ -23,7 +23,7 @@ import AddMovie from "./pages/AddMovie";
 import EditMovie from "./pages/EditMovie";
 
 const PrivateRoute = ({ children }) => {
-  const currentUser = useSelector((state) => state.auth.credentials);
+  const currentUser = useSelector((state) => state.auth.token);
   return currentUser ? children : <Navigate to="/login" replace />;
 };
 

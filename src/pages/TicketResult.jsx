@@ -8,7 +8,7 @@ import http from "../utils/axios";
 
 const TicketResult = () => {
   const { queryId } = useParams();
-  const credentials = useSelector((state) => state.auth.credentials);
+  const token = useSelector((state) => state.auth.token);
   const [ticketData, setTicketData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -16,7 +16,7 @@ const TicketResult = () => {
     const fetchTicketData = async () => {
       try {
         setIsLoading(true);
-        const response = await http(credentials.token).get("/transactions");
+        const response = await http(token).get("/transactions");
         const data = response.data.results
 
           
@@ -43,10 +43,10 @@ const TicketResult = () => {
       }
     };
 
-    if (credentials?.token && queryId) {
+    if (token && queryId) {
       fetchTicketData();
     }
-  }, [queryId, credentials]);
+  }, [queryId, token]);
 
   if (isLoading) {
     return (

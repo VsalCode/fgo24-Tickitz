@@ -11,6 +11,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { authActions } from "../redux/reducer/auth";
+import { currentUserActions } from "../redux/reducer/user"
 import http from "../utils/axios";
 
 const schema = yup
@@ -72,7 +73,8 @@ async function handleLogin(dataLogin) {
     return;
   }
 
-  dispatch(authActions({ token: tokenData, email: result.email, role: result.roles }));
+  dispatch(authActions(tokenData));
+  dispatch(currentUserActions({ email: result.email, role: result.roles }))
 
   toast.success("Login Successfully!");
 

@@ -22,8 +22,7 @@ const AddMovie = () => {
     }
   });
   const navigate = useNavigate();
-  const credentials = useSelector((state) => state.auth.credentials);
-  const token = credentials.token;
+  const token = useSelector((state) => state.auth.token);
   
 
   // const stringToOptions = (str) => 

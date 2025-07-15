@@ -42,7 +42,7 @@ const Payment = () => {
     formState: { errors },
   } = useForm();
 
-  const credentials = useSelector((state) => state.auth.credentials);
+  const token = useSelector((state) => state.auth.token);
   const dataBookingTicket = useSelector((state) => state.ticket.tempHistoryBooking);
 
   useEffect(() => {
@@ -87,13 +87,13 @@ const Payment = () => {
       }
     };
 
-    if (credentials && credentials.token) {
-      getUserProfile(credentials.token);
+    if (token && token) {
+      getUserProfile(token);
     } else {
       toast.error("You need to login first");
       nav("/login");
     }
-  }, [credentials, nav]);
+  }, [token, nav]);
 
   function handlePayment(value) {
     const { fullname, email, paymentMethod, phone } = value;
@@ -140,7 +140,7 @@ const Payment = () => {
 
       console.log("Payment payload:", payload);
 
-      const response = await http(credentials.token).post("/transactions", payload);
+      const response = await http(token).post("/transactions", payload);
 
       if (response.data.success) {
         dispatch(

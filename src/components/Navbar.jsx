@@ -5,34 +5,21 @@ import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { MdLogout } from "react-icons/md";
 import { authActions } from "../redux/reducer/auth";
+import { currentUserActions } from "../redux/reducer/user"
 import toast, { Toaster } from "react-hot-toast";
 import logo from '../assets/icon/logo.png'
 import http from "../utils/axios";
 
 const Navbar = () => {
   const [showHamburger, setShowHamburger] = useState(false);
-  const [user, setUser] = useState(null); // Inisialisasi dengan null
+  const [user, setUser] = useState(null); 
   const dispatch = useDispatch();    
-  const credentials = useSelector((state) => state.auth.credentials);
-
-  async function getUserProfile(token) {
-    try {
-      const { data } = await http(token).get("/user");
-      if (data.success) {
-        setUser(data.results);
-      }
-    } catch (error) {
-      console.error("Failed to fetch user profile", error);
-    }
-  }
+  const token = useSelector((state) => state.auth.token);
+  const currentUser = useSelector((state) => state.user.user);
 
   useEffect(() => {
-    if (credentials && credentials.token) {
-      getUserProfile(credentials.token);
-    } else {
-      setUser(null);
-    }
-  }, [credentials]);
+    setUser(currentUser)
+  }, [currentUser])
 
   async function logoutEndpoint(token) {
     try {
@@ -53,11 +40,12 @@ const Navbar = () => {
 
   async function handleLogout() {
     try {
-      if (credentials?.token) {
-        await logoutEndpoint(credentials.token);
+      if (token) {
+        await logoutEndpoint(token);
       }
       dispatch(authActions(null));
-      setUser(null); // Reset user state
+      dispatch(currentUserActions(null));
+      setUser(null); 
       toast.success("Logout Success!");
     } catch (error) {
       toast.error("Logout failed!", error.message);

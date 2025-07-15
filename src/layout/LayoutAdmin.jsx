@@ -4,14 +4,14 @@ import toast, { Toaster } from "react-hot-toast";
 import { useSelector } from "react-redux";
 
 const LayoutAdmin = () => {
-  const credentials = useSelector((state) => state.auth.credentials);
+  const user = useSelector((state) => state.user.user);
 
-  if(credentials.role !== "admin"){
+  if(user.role !== "admin"){
     toast.error("You must login as admin!");
     return <Navigate to="/" replace />
   }
 
-  if (credentials === null ) {
+  if (user === null ) {
     toast.error("You must login as admin!");
     return <Navigate to="/login" replace />
   }

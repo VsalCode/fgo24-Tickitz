@@ -11,18 +11,18 @@ const LayoutProfile = () => {
   const [currentUser, setCurrentUser] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
-  const credentials = useSelector((state) => state.auth.credentials);
+  const token = useSelector((state) => state.auth.token);
 
   React.useEffect(() => {
     const fetchUserData = async () => {
       try {
         setIsLoading(true);
 
-        if (!credentials || !credentials.token) {
+        if (!token) {
           throw new Error("User not authenticated");
         }
 
-        const { data } = await http(credentials.token).get("/user");
+        const { data } = await http(token).get("/user");
 
         if (!data) {
           throw new Error("Invalid user data structure");
@@ -39,7 +39,7 @@ const LayoutProfile = () => {
     };
 
     fetchUserData();
-  }, [credentials]);
+  }, [token]);
 
   if (isLoading) {
     return (

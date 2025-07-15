@@ -19,12 +19,12 @@ const MovieDetail = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const credentials = useSelector((state) => state.auth.credentials);
+  const token = useSelector((state) => state.auth.token);
 
   function handleBookTicket(value) {
     const { cinema, date, time, location } = value;
 
-    if (!credentials?.token) {
+    if (!token) {
       toast.error("You must Login or Register!");
       return;
     }

@@ -28,8 +28,7 @@ const AccountSettings = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [originalUser, setOriginalUser] = useState(null);
-  const credentials = useSelector((state) => state.auth.credentials);
-  const token = credentials.token;
+  const token = useSelector((state) => state.auth.token);
 
   const {
     register,
