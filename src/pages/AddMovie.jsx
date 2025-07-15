@@ -25,9 +25,6 @@ const AddMovie = () => {
   const token = useSelector((state) => state.auth.token);
   
 
-  // const stringToOptions = (str) => 
-  //   str ? str.split(',').map(item => ({ value: item.trim(), label: item.trim() })) : [];
-
   const optionsToIds = (options) => options.map(opt => opt.value);
 
   async function addMovieEndpoint(movie){
