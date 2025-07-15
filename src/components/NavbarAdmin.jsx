@@ -1,17 +1,18 @@
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { MdLogout } from "react-icons/md";
-// import { useDispatch } from "react-redux";
-// import { adminLogin } from "../redux/reducer/auth";
 import toast, { Toaster } from "react-hot-toast";
-import logo from "../assets/icon/logo.png";
+import logo from '../assets/icon/logo.png'
+import { useDispatch } from "react-redux";
+import { authActions } from "../redux/reducer/auth";
+import { currentUserActions } from "../redux/reducer/user"
 
 const NavbarAdmin = () => {
   const [showHamburger, setShowHamburger] = useState(false);
-  // const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   function HandleHamburger() {
     setShowHamburger(!showHamburger);
@@ -19,7 +20,8 @@ const NavbarAdmin = () => {
 
   function handleLogout() {
     toast.success("Logout Success!");
-    // dispatch(adminLogin());
+    dispatch(authActions(null));
+          dispatch(currentUserActions(null));
     toast.dismiss();
     navigate("/login", { replace: true });
   }

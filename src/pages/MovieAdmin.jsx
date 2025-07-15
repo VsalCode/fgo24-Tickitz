@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
-import {  RiArrowLeftSLine, RiArrowRightSLine } from "react-icons/ri";
+import { useState, useEffect, useCallback } from "react";
+import { RiArrowDropDownLine, RiArrowLeftSLine, RiArrowRightSLine } from "react-icons/ri";
+import { MdCalendarToday } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
 import { HiOutlineTrash } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import http from "../utils/axios";
+import { useSelector } from "react-redux";
 
 const MovieAdmin = () => {
   const [movies, setMovies] = useState([]);
@@ -12,45 +14,47 @@ const MovieAdmin = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalMovies, setTotalMovies] = useState(0);
-  const limit = 6; 
+  const [deleteLoading, setDeleteLoading] = useState({});
+  const token = useSelector((state) => state.auth.token);
+  const limit = 5;
+
+  const fetchMovies = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await http().get("/movies", {
+        params: { page: currentPage, limit }
+      });
+
+      if (!data?.success) {
+        throw new Error(data?.message || "Failed to fetch movies");
+      }
+
+      const formattedMovies = data.results.map(movie => ({
+        ...movie,
+        poster: movie.poster_path,
+        backdrop: movie.backdrop_path,
+        genre: movie.genres.join(", "),
+        release_date: movie.release_date,
+        runtime: movie.runtime
+      }));
+
+      setMovies(formattedMovies);
+      setTotalPages(data.pageInfo.totalPages);
+      setTotalMovies(data.pageInfo.total);
+      setError(null);
+    } catch (err) {
+      setError(err.message || "An error occurred");
+      setMovies([]);
+      setTotalPages(1);
+      setTotalMovies(0);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, limit]);
 
   useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        setIsLoading(true);
-        const { data } = await http().get("/movies", {
-          params: { page: currentPage, limit }
-        });
-
-        if (!data?.success) {
-          throw new Error(data?.message || "Failed to fetch movies");
-        }
-
-        const formattedMovies = data.results.map(movie => ({
-          ...movie,
-          poster: movie.poster_path,
-          backdrop: movie.backdrop_path,
-          genre: movie.genres.join(", "),
-          release_date: movie.release_date,
-          runtime: movie.runtime
-        }));
-
-        setMovies(formattedMovies);
-        setTotalPages(data.pageInfo.totalPages);
-        setTotalMovies(data.pageInfo.total);
-        setError(null);
-      } catch (err) {
-        setError(err.message || "An error occurred");
-        setMovies([]);
-        setTotalPages(1);
-        setTotalMovies(0);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchMovies();
-  }, [currentPage]);
+  }, [fetchMovies]);
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -61,6 +65,32 @@ const MovieAdmin = () => {
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handleDeleteMovie = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this movie?")) {
+      return;
+    }
+
+    try {
+      setDeleteLoading(prev => ({ ...prev, [id]: true }));
+      
+      const { data } = await http(token).delete(`/admin/movies/${id}`);
+      
+      if (!data?.success) {
+        throw new Error(data?.message || "Failed to delete movie");
+      }
+
+      fetchMovies();
+      
+      if (movies.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+    } catch (err) {
+      setError(err.message || "An error occurred while deleting the movie");
+    } finally {
+      setDeleteLoading(prev => ({ ...prev, [id]: false }));
     }
   };
 
@@ -85,6 +115,9 @@ const MovieAdmin = () => {
       <div className="flex md:flex-row md:justify-between md:gap-0 flex-col gap-5">
         <p className="text-3xl font-medium">List Movie</p>
         <div className="flex md:flex-row flex-col gap-4 text-primary">
+          <button className="cursor-pointer bg-[#EFF0F6] flex items-center gap-4 py-1 px-4 rounded-lg">
+            <MdCalendarToday /> <span>November 2025</span> <RiArrowDropDownLine className="text-3xl" />
+          </button>
           <Link to="/add-movie" className="cursor-pointer bg-third font-semibold gap-3 py-2 px-4 rounded-lg text-center">
             Add Movies
           </Link>
@@ -128,9 +161,17 @@ const MovieAdmin = () => {
                       <FaRegEdit />
                     </Link>
                     <button
-                      className="cursor-pointer bg-error text-white p-1 rounded-sm hover:bg-red-700"
+                      onClick={() => handleDeleteMovie(movie.id)}
+                      disabled={deleteLoading[movie.id]}
+                      className={`cursor-pointer bg-error text-white p-1 rounded-sm hover:bg-red-700 ${
+                        deleteLoading[movie.id] ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
                     >
-                      <HiOutlineTrash className="text-2xl" />
+                      {deleteLoading[movie.id] ? (
+                        <span className="loading loading-spinner loading-xs"></span>
+                      ) : (
+                        <HiOutlineTrash className="text-2xl" />
+                      )}
                     </button>
                   </td>
                 </tr>
@@ -146,7 +187,6 @@ const MovieAdmin = () => {
         </table>
       </div>
       
-      {/* Pagination Controls */}
       {totalMovies > 0 && (
         <div className="flex items-center justify-between mt-6">
           <p className="text-sm text-gray-400">
