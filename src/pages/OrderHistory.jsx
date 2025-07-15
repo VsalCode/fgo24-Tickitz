@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RiArrowDropDownLine, RiArrowDropUpLine } from "react-icons/ri";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import qr from "../assets/images/QR.svg"
+import qr from "../assets/images/QR.svg";
+import http from "../utils/axios"; 
 
 const HistoryItem = ({ item, index }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -26,7 +27,7 @@ const HistoryItem = ({ item, index }) => {
         <div className="flex-1 flex justify-end">
           <button onClick={() => setShowDetails(!showDetails)} className="cursor-pointer flex-between">
             <span>Show Details</span>
-            {showDetails ? <RiArrowDropDownLine className="text-3xl" /> : <RiArrowDropUpLine className="text-3xl" />}
+            {showDetails ? <RiArrowDropUpLine className="text-3xl" /> : <RiArrowDropDownLine className="text-3xl" />}
           </button>
         </div>
       </div>
@@ -67,9 +68,35 @@ const HistoryItem = ({ item, index }) => {
 };
 
 const OrderHistory = () => {
-  const userLogin = useSelector((state) => state.auth.currentUser);
-  const dataHistoryPayment = useSelector((state) => state.ticket.historyPayment);
-  const filtered = dataHistoryPayment.filter((e) => e.userId === userLogin.id);
+  const token = useSelector((state) => state.auth.token);
+  const [isLoading, setIsLoading] = useState(true);
+  const [historyData, setHistoryData] = useState([]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await http(token).get("/transactions/history");
+        setHistoryData(response.data.results);
+      } catch (error) {
+        console.error("Failed to fetch history:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, [token]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-third mb-4"></div>
+          <p className="text-white text-xl">Loading ticket data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -81,18 +108,17 @@ const OrderHistory = () => {
           Order History
         </Link>
       </section>
-      {filtered.length !== 0 ? (
+      {historyData.length !== 0 ? (
         <section className="flex flex-col-reverse gap-7">
-        {filtered.map((item, index) => (
-          <HistoryItem key={`history-payment-${index}`} item={item} index={index} />
-        ))}
-      </section>
+          {historyData.map((item, index) => (
+            <HistoryItem key={`history-payment-${index}`} item={item} index={index} />
+          ))}
+        </section>
       ) : (
         <section className="text-center py-10">
           <p>You do not have a ticket booking history yet</p>
         </section>
       )}
-      
     </>
   );
 };
