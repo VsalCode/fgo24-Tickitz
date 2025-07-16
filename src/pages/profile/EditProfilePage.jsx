@@ -6,8 +6,8 @@ import { useState, useEffect } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import toast from "react-hot-toast";
-import http from "../utils/axios";
-import { currentUserActions } from "../redux/reducer/user"
+import http from "../../utils/axios";
+import { currentUserActions } from "../../redux/reducer/user"
 
 const schema = yup.object().shape({
   fullname: yup.string().optional(),
@@ -25,7 +25,7 @@ const schema = yup.object().shape({
   }),
 });
 
-const AccountSettings = () => {
+const EditProfilePage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [originalUser, setOriginalUser] = useState(null);
@@ -112,7 +112,7 @@ const AccountSettings = () => {
   return (
     <>
       <section className="bg-secondary w-full rounded-xl grid grid-cols-2">
-        <Link to="/account-settings" className="text-center py-5 cursor-pointer font-medium border-b-third border-b-4 hover:opacity-70 transition-colors">
+        <Link to="/profile" className="text-center py-5 cursor-pointer font-medium border-b-third border-b-4 hover:opacity-70 transition-colors">
           Account Settings
         </Link>
         <Link to="/order-history" className="text-center py-5 cursor-pointer hover:text-third font-medium hover:opacity-70 transition-colors">
@@ -185,4 +185,4 @@ const AccountSettings = () => {
   );
 };
 
-export default AccountSettings;
+export default EditProfilePage;

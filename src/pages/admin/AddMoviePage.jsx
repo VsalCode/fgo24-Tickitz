@@ -5,11 +5,11 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { nanoid } from "@reduxjs/toolkit";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { ValidationMovies } from "../components/ValidationMovies";
+import { ValidationMovies } from "../../components/ValidationMovies";
 import CreatableSelect from "react-select/creatable";
-import http from "../utils/axios";
+import http from "../../utils/axios";
 
-const AddMovie = () => {
+const AddMoviePage = () => {
   const [genreOptions, setGenreOptions] = React.useState([]);
   const [directorOptions, setDirectorOptions] = React.useState([]);
   const [castOptions, setCastOptions] = React.useState([]);
@@ -287,4 +287,4 @@ const InputAddMovie = ({ name, control, label, type = "text", placeholder, error
   );
 };
 
-export default AddMovie;
+export default AddMoviePage;

@@ -3,9 +3,9 @@ import toast, { Toaster } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { ValidationMovies } from "../components/ValidationMovies";
+import { ValidationMovies } from "../../components/ValidationMovies";
 
-const EditMovie = () => {
+const EditMoviePage = () => {
   const { id } = useParams();
   // const dispatch = useDispatch();
   const nav = useNavigate();
@@ -117,4 +117,4 @@ const InputAddMovie = ({ label, id, type = "text", placeholder, errors, ...props
   );
 };
 
-export default EditMovie;
+export default EditMoviePage;

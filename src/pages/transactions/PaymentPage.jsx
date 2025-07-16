@@ -4,16 +4,16 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import http from "../utils/axios";
-import bca from "../assets/images/bca.svg";
-import bri from "../assets/images/bri.svg";
-import dana from "../assets/images/dana.svg";
-import googlePay from "../assets/images/googlePay.svg";
-import gopay from "../assets/images/gopay.svg";
-import ovo from "../assets/images/ovo.svg";
-import paypal from "../assets/images/paypal.svg";
-import visa from "../assets/images/visa.svg";
-import { bookTicketActions } from "../redux/reducer/ticket.js";
+import http from "../../utils/axios.js";
+import bca from "../../assets/images/bca.svg";
+import bri from "../../assets/images/bri.svg";
+import dana from "../../assets/images/dana.svg";
+import googlePay from "../../assets/images/googlePay.svg";
+import gopay from "../../assets/images/gopay.svg";
+import ovo from "../../assets/images/ovo.svg";
+import paypal from "../../assets/images/paypal.svg";
+import visa from "../../assets/images/visa.svg";
+import { bookTicketActions } from "../../redux/reducer/ticket.js";
 
 const paymentMethodMap = {
   dana: 1,
@@ -26,7 +26,7 @@ const paymentMethodMap = {
   bri: 8,
 };
 
-const Payment = () => {
+const PaymentPage = () => {
   const nav = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams(); 
@@ -325,4 +325,4 @@ export const PaymentKey = ({ srcImage, value, ...props }) => {
   );
 };
 
-export default Payment;
+export default PaymentPage;

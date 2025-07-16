@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import notFound from '../assets/images/not_found.png'
 
-const NotFound = () => {
+const NotFoundPage = () => {
   return (
     <main className='bg-primary h-screen flex-center flex-col'>
       <img className='sm:w-100 w-70' src={notFound} alt="not_found" />
@@ -10,4 +10,4 @@ const NotFound = () => {
   )
 }
 
-export default NotFound
+export default NotFoundPage

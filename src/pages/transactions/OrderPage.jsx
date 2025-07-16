@@ -2,9 +2,9 @@ import { FaCheck } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { bookTicketActions } from "../redux/reducer/ticket";
+import { bookTicketActions } from "../../redux/reducer/ticket";
 import toast from "react-hot-toast";
-import fallback from "../assets/images/fallback.png";
+import fallback from "../../assets/images/fallback.png";
 
 const OrderPage = () => {
   const nav = useNavigate();

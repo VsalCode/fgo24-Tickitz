@@ -3,10 +3,10 @@ import toast, { Toaster } from "react-hot-toast";
 import { GiTicket } from "react-icons/gi";
 import { useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
-import qr from "../assets/images/QR.svg";
-import http from "../utils/axios";
+import qr from "../../assets/images/QR.svg";
+import http from "../../utils/axios";
 
-const TicketResult = () => {
+const TicketResultPage = () => {
   const { queryId } = useParams();
   const token = useSelector((state) => state.auth.token);
   const [ticketData, setTicketData] = useState(null);
@@ -139,4 +139,4 @@ const TicketResult = () => {
   );
 };
 
-export default TicketResult;
+export default TicketResultPage;

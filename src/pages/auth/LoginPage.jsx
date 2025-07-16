@@ -10,9 +10,9 @@ import { useDispatch } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { authActions } from "../redux/reducer/auth";
-import { currentUserActions } from "../redux/reducer/user";
-import http from "../utils/axios";
+import { authActions } from "../../redux/reducer/auth";
+import { currentUserActions } from "../../redux/reducer/user";
+import http from "../../utils/axios";
 
 const schema = yup
   .object({
@@ -21,7 +21,7 @@ const schema = yup
   })
   .required();
 
-const Login = () => {
+const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const {
     register,
@@ -152,7 +152,7 @@ const Login = () => {
             </button>
             <p>
               Do Not Have an Account?{" "}
-              <Link to="/signup" className="text-blue-600">
+              <Link to="/register" className="text-blue-600">
                 Sign Up
               </Link>
             </p>
@@ -173,4 +173,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginPage;

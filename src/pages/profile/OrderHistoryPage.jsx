@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { RiArrowDropDownLine, RiArrowDropUpLine } from "react-icons/ri";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import qr from "../assets/images/QR.svg";
-import http from "../utils/axios"; 
+import qr from "../../assets/images/QR.svg";
+import http from "../../utils/axios"; 
 
 const HistoryItem = ({ item, index }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -43,7 +43,7 @@ const HistoryItem = ({ item, index }) => {
                 Movie: <span className="text-third font-bold">{item.title}</span>
               </p>
               <p>
-                Category: <span className="text-third font-bold">{item.genres.map((e) => e.name).join(", ")}</span>
+                Category: <span className="text-third font-bold">{item.genres?.map((e) => e.name).join(", ")}</span>
               </p>
               <p>
                 Date: <span className="text-third font-bold">{item.date}</span>
@@ -67,7 +67,7 @@ const HistoryItem = ({ item, index }) => {
   );
 };
 
-const OrderHistory = () => {
+const OrderHistoryPage = () => {
   const token = useSelector((state) => state.auth.token);
   const [isLoading, setIsLoading] = useState(true);
   const [historyData, setHistoryData] = useState([]);
@@ -101,7 +101,7 @@ const OrderHistory = () => {
   return (
     <>
       <section className="bg-secondary w-full rounded-xl grid grid-cols-2">
-        <Link to="/account-settings" className="text-center py-5 cursor-pointer font-medium hover:opacity-70 transition-colors">
+        <Link to="/profile" className="text-center py-5 cursor-pointer font-medium hover:opacity-70 transition-colors">
           Account Settings
         </Link>
         <Link to="/order-history" className="text-center py-5 cursor-pointer hover:text-third font-medium border-b-third border-b-4 hover:opacity-70 transition-colors">
@@ -109,8 +109,8 @@ const OrderHistory = () => {
         </Link>
       </section>
       {historyData.length !== 0 ? (
-        <section className="flex flex-col-reverse gap-7">
-          {historyData.map((item, index) => (
+        <section className="flex flex-col gap-7">
+          {historyData?.map((item, index) => (
             <HistoryItem key={`history-payment-${index}`} item={item} index={index} />
           ))}
         </section>
@@ -123,4 +123,4 @@ const OrderHistory = () => {
   );
 };
 
-export default OrderHistory;
+export default OrderHistoryPage;

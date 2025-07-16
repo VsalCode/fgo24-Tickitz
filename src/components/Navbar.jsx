@@ -85,7 +85,7 @@ const Navbar = () => {
             </div>
             <div>
               <p className="text-xl">{getDisplayName()}</p>
-              <Link to="/account-settings" className="text-sm mb-[-5px] text-third">
+              <Link to="/profile" className="text-sm mb-[-5px] text-third">
                 account settings
               </Link>
             </div>
@@ -98,7 +98,7 @@ const Navbar = () => {
             <Link to="/login" className="universal-button border">
               LOGIN
             </Link>
-            <Link to="/signup" className="universal-button bg-third text-primary">
+            <Link to="/register" className="universal-button bg-third text-primary">
               SIGN UP
             </Link>
           </div>
@@ -127,7 +127,7 @@ const Navbar = () => {
                 <div className="flex flex-col items-start">
                   <p className="text-xl">{getDisplayName()}</p>
                   <Link 
-                    to="/account-settings" 
+                    to="/profile" 
                     className="text-sm mb-[-5px] text-third"
                     onClick={() => setShowHamburger(false)}
                   >
@@ -151,7 +151,7 @@ const Navbar = () => {
                 LOGIN
               </Link>
               <Link 
-                to="/signup" 
+                to="/register" 
                 className="grow universal-button bg-third text-primary text-base"
                 onClick={() => setShowHamburger(false)}
               >

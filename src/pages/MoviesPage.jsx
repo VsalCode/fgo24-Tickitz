@@ -10,7 +10,7 @@ import banner from "../assets/images/banner-movie.png";
 import { useEffect, useState } from "react";
 import http from "../utils/axios";
 
-const Movies = () => {
+const MoviesPage = () => {
   const [movies, setMovies] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   // const [totalMovies, setTotalMovies] = useState(0);
@@ -280,4 +280,4 @@ const Movies = () => {
   );
 };
 
-export default Movies;
+export default MoviesPage;

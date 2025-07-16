@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import toast, { Toaster } from "react-hot-toast";
-import http from "../utils/axios";
+import http from "../../utils/axios";
 
 const schema = yup
   .object({
@@ -23,7 +23,7 @@ const schema = yup
   })
   .required();
 
-const SignUp = () => {
+const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const {
     register,
@@ -172,4 +172,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default RegisterPage;

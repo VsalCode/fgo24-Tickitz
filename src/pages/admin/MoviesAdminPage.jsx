@@ -4,10 +4,10 @@ import { MdCalendarToday } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
 import { HiOutlineTrash } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import http from "../utils/axios";
+import http from "../../utils/axios";
 import { useSelector } from "react-redux";
 
-const MovieAdmin = () => {
+const MoviesAdminPage = () => {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -232,4 +232,4 @@ const MovieAdmin = () => {
   );
 };
 
-export default MovieAdmin;
+export default MoviesAdminPage;
