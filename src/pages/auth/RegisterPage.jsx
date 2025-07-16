@@ -91,7 +91,7 @@ const RegisterPage = () => {
   }
 
   return (
-    <main className="sm:bg-sixth sm:bg-primary bg-white h-fit py-5 flex-center flex-col font-sans">
+    <main className="sm:bg-sixth sm:bg-primary bg-white h-screen py-5 flex-center flex-col font-sans">
       <Toaster />
       <section className="max-w-[500px] h-fit w-full bg-white sm:px-10 p-7 rounded-2xl sm:shadow-2xl">
         <form onSubmit={handleSubmit(handleRegister)}>

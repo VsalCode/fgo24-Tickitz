@@ -105,7 +105,7 @@ const LoginPage = () => {
 
 
   return (
-    <main className="sm:bg-sixth sm:bg-primary bg-white h-fit py-10 flex-center flex-col font-sans">
+    <main className="sm:bg-sixth sm:bg-primary bg-white h-screen py-10 flex-center flex-col font-sans">
       <Toaster />
       <section className="max-w-[500px] w-full h-fit bg-white sm:p-10 p-7 rounded-2xl sm:shadow-2xl">
         <form onSubmit={handleSubmit(handleLogin)}>
@@ -137,7 +137,7 @@ const LoginPage = () => {
             {errors.password && <p className="text-error text-sm italic">{errors.password.message}</p>}
           </div>
           <div className="text-blue-600 font-medium py-4 flex justify-end sm:text-base text-sm">
-            <Link>Forgot Your Password?</Link>
+            <Link to="/forgot-password" >Forgot Your Password?</Link>
           </div>
           <div className="text-center font-medium sm:text-base text-sm">
             <button type="submit" className="cursor-pointer bg-third w-full text-primary font-bold py-3 rounded-lg mb-5 hover:bg-secondary hover:text-white transition-colors flex justify-center items-center" disabled={isLoading}>

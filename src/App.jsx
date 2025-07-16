@@ -20,6 +20,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import OrderPage from "./pages/transactions/OrderPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 
 const PrivateRoute = ({ children }) => {
   const currentUser = useSelector((state) => state.auth.token);
@@ -120,6 +121,10 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <RegisterPage />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
   },
   {
     path: "/*",
