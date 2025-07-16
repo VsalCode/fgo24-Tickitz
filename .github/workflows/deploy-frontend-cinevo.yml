@@ -30,7 +30,7 @@ jobs:
           push: true
           tags: ghcr.io/vsalcode/fgo24-react-cinevo:latest
 
-      - name: Deploy to VPS
+      - name: Deploy to VPS (Docker Compose)
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -39,5 +39,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             docker pull ghcr.io/vsalcode/fgo24-react-cinevo:latest
-            docker rm -f cinevo || true
-            docker run -d -p 9402:80 --name cinevo ghcr.io/vsalcode/fgo24-react-cinevo:latest
+            
+            cd /path/to/your/docker-compose
+            
+            docker-compose down
+            docker-compose up -d
+            
+            docker image prune -f
