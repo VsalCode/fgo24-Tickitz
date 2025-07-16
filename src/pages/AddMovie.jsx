@@ -1,3 +1,4 @@
+import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
 import { useSelector } from "react-redux";
@@ -9,6 +10,52 @@ import CreatableSelect from "react-select/creatable";
 import http from "../utils/axios";
 
 const AddMovie = () => {
+  const [genreOptions, setGenreOptions] = React.useState([]);
+  const [directorOptions, setDirectorOptions] = React.useState([]);
+  const [castOptions, setCastOptions] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState({
+    genres: true,
+    directors: true,
+    casts: true,
+  });
+
+  const navigate = useNavigate();
+  const token = useSelector((state) => state.auth.token);
+
+  React.useEffect(() => {
+  const fetchInitialOptions = async () => {
+    try {
+      const [genresRes, directorsRes, castsRes] = await Promise.all([
+        http().get("/movies/genres"),
+        http().get("/movies/directors"),
+        http().get("/movies/casts")
+      ]);
+
+      console.log("Genres response:", genresRes);
+      console.log("Directors response:", directorsRes);
+      console.log("Casts response:", castsRes);
+
+      const getData = (response) => {
+        return response.data?.data || 
+               response.data?.results || 
+               response.data || 
+               response;
+      };
+
+      setGenreOptions(getData(genresRes)?.map((g) => ({ value: g.id, label: g.name })) || []);
+      setDirectorOptions(getData(directorsRes)?.map((d) => ({ value: d.id, label: d.name })) || []);
+      setCastOptions(getData(castsRes)?.map((c) => ({ value: c.id, label: c.name })) || []);
+
+      setIsLoading({ genres: false, directors: false, casts: false });
+    } catch (error) {
+      console.error("Full fetch error:", error);
+      toast.error(`Failed to load initial data: ${error.message}`);
+    }
+  };
+
+  fetchInitialOptions();
+}, []);
+
   const {
     control,
     handleSubmit,
@@ -19,27 +66,21 @@ const AddMovie = () => {
       genres: [],
       directors: [],
       casts: [],
-    }
+    },
   });
-  const navigate = useNavigate();
-  const token = useSelector((state) => state.auth.token);
-  
 
-  const optionsToIds = (options) => options.map(opt => opt.value);
+  const optionsToIds = (options) => options.map((opt) => opt.value);
 
-  async function addMovieEndpoint(movie){
-    const { data } = await http(token).post("/auth/login", movie, {
-    headers: {
-      "Content-Type": "application/json"
+  async function addMovieEndpoint(movie) {
+    try {
+      const { data } = await http(token).post("/movies", movie);
+      return data.message;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to add movie");
     }
-  })
-
-  if (data.success){
-    return data.message
-  }
   }
 
-  const handleAddMovie = (data) => {
+  const handleAddMovie = async (data) => {
     const movie = {
       id: nanoid(),
       backdrop_path: data.backdrop,
@@ -54,46 +95,50 @@ const AddMovie = () => {
       vote_average: parseFloat(data.vote_average),
     };
 
-    const response = addMovieEndpoint(movie)
-    toast.success(`${response}`);
+    try {
+      const response = await addMovieEndpoint(movie);
+      toast.success(response);
 
-    setTimeout(() => {
-      navigate("/movies-admin");
-    }, 2000);
+      setTimeout(() => {
+        navigate("/movies-admin");
+      }, 2000);
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const customStyles = {
     control: (base) => ({
       ...base,
-      backgroundColor: '#283246',
-      border: 'none',
-      borderRadius: '12px',
-      minHeight: '48px',
+      backgroundColor: "#283246",
+      border: "none",
+      borderRadius: "12px",
+      minHeight: "48px",
     }),
     multiValue: (base) => ({
       ...base,
-      backgroundColor: '#3a4a6b',
+      backgroundColor: "#3a4a6b",
     }),
     multiValueLabel: (base) => ({
       ...base,
-      color: 'white',
+      color: "white",
     }),
     input: (base) => ({
       ...base,
-      color: 'white',
+      color: "white",
     }),
     placeholder: (base) => ({
       ...base,
-      color: '#a0aec0',
+      color: "#a0aec0",
     }),
     menu: (base) => ({
       ...base,
-      backgroundColor: '#283246',
+      backgroundColor: "#283246",
     }),
     option: (base, state) => ({
       ...base,
-      backgroundColor: state.isFocused ? '#3a4a6b' : '#283246',
-      color: 'white',
+      backgroundColor: state.isFocused ? "#3a4a6b" : "#283246",
+      color: "white",
     }),
   };
 
@@ -104,32 +149,14 @@ const AddMovie = () => {
 
       <div className="flex sm:flex-row flex-col gap-4">
         <div className="flex-1">
-          <InputAddMovie 
-            name="poster" 
-            control={control}
-            errors={errors.poster?.message && <p className="text-red-400 text-sm italic">{errors.poster.message}</p>} 
-            label="Poster URL" 
-            placeholder="Input Poster URL" 
-          />
+          <InputAddMovie name="poster" control={control} errors={errors.poster?.message && <p className="text-red-400 text-sm italic">{errors.poster.message}</p>} label="Poster URL" placeholder="Input Poster URL" />
         </div>
         <div className="flex-1">
-          <InputAddMovie 
-            name="backdrop" 
-            control={control}
-            errors={errors.backdrop?.message && <p className="text-red-400 text-sm italic">{errors.backdrop.message}</p>} 
-            label="Backdrop URL" 
-            placeholder="Input Backdrop Image URL" 
-          />
+          <InputAddMovie name="backdrop" control={control} errors={errors.backdrop?.message && <p className="text-red-400 text-sm italic">{errors.backdrop.message}</p>} label="Backdrop URL" placeholder="Input Backdrop Image URL" />
         </div>
       </div>
 
-      <InputAddMovie 
-        name="title" 
-        control={control}
-        errors={errors.title?.message && <p className="text-red-400 text-sm italic">{errors.title.message}</p>} 
-        label="Movie Name" 
-        placeholder="Input Movie Name" 
-      />
+      <InputAddMovie name="title" control={control} errors={errors.title?.message && <p className="text-red-400 text-sm italic">{errors.title.message}</p>} label="Movie Name" placeholder="Input Movie Name" />
 
       <div className="flex sm:flex-row flex-col gap-4">
         <div className="flex-1">
@@ -142,8 +169,11 @@ const AddMovie = () => {
                 <CreatableSelect
                   {...field}
                   isMulti
+                  isDisabled={isLoading.genres}
+                  isLoading={isLoading.genres}
+                  options={genreOptions}
                   styles={customStyles}
-                  placeholder="Input Movie Category / Genres (e.g., Action, Comedy)"
+                  placeholder={isLoading.genres ? "Loading genres..." : "Input Movie Category / Genres (e.g., Action, Comedy)"}
                   onChange={(selected) => field.onChange(selected)}
                   value={field.value}
                 />
@@ -153,12 +183,12 @@ const AddMovie = () => {
           </div>
         </div>
         <div className="flex-1">
-          <InputAddMovie 
-            name="vote_average" 
+          <InputAddMovie
+            name="vote_average"
             control={control}
-            errors={errors.vote_average?.message && <p className="text-red-400 text-sm italic">{errors.vote_average.message}</p>} 
-            label="Rating" 
-            placeholder="Movie Rating (0-10)" 
+            errors={errors.vote_average?.message && <p className="text-red-400 text-sm italic">{errors.vote_average.message}</p>}
+            label="Rating"
+            placeholder="Movie Rating (0-10)"
             type="number"
             step="0.1"
           />
@@ -167,27 +197,28 @@ const AddMovie = () => {
 
       <div className="flex sm:flex-row flex-col gap-4">
         <div className="flex-1">
-          <InputAddMovie 
-            name="release_date" 
+          <InputAddMovie
+            name="release_date"
             control={control}
-            errors={errors.release_date?.message && <p className="text-red-400 text-sm italic">{errors.release_date.message}</p>} 
-            label="Release Date" 
-            placeholder="Input Release Date (YYYY-MM-DD)" 
+            errors={errors.release_date?.message && <p className="text-red-400 text-sm italic">{errors.release_date.message}</p>}
+            label="Release Date"
+            placeholder="Input Release Date (YYYY-MM-DD)"
             type="date"
           />
         </div>
         <div className="flex-1">
-          <InputAddMovie 
-            name="runtime" 
+          <InputAddMovie
+            name="runtime"
             control={control}
-            errors={errors.runtime?.message && <p className="text-red-400 text-sm italic">{errors.runtime.message}</p>} 
-            label="Duration (Minutes)" 
-            placeholder="Input Movie Duration" 
+            errors={errors.runtime?.message && <p className="text-red-400 text-sm italic">{errors.runtime.message}</p>}
+            label="Duration (Minutes)"
+            placeholder="Input Movie Duration"
             type="number"
           />
         </div>
       </div>
 
+      {/* Directors Select */}
       <div className="flex flex-col gap-4">
         <label>Director Name</label>
         <Controller
@@ -197,8 +228,11 @@ const AddMovie = () => {
             <CreatableSelect
               {...field}
               isMulti
+              isDisabled={isLoading.directors}
+              isLoading={isLoading.directors}
+              options={directorOptions}
               styles={customStyles}
-              placeholder="Input Director Name (e.g., Christopher Nolan)"
+              placeholder={isLoading.directors ? "Loading directors..." : "Input Director Name (e.g., Christopher Nolan)"}
               onChange={(selected) => field.onChange(selected)}
               value={field.value}
             />
@@ -207,6 +241,7 @@ const AddMovie = () => {
         {errors.directors?.message && <p className="text-red-400 text-sm italic">{errors.directors.message}</p>}
       </div>
 
+      {/* Casts Select */}
       <div className="flex flex-col gap-4">
         <label>Cast</label>
         <Controller
@@ -216,8 +251,11 @@ const AddMovie = () => {
             <CreatableSelect
               {...field}
               isMulti
+              isDisabled={isLoading.casts}
+              isLoading={isLoading.casts}
+              options={castOptions}
               styles={customStyles}
-              placeholder="Input Cast Names (e.g., Tom Hanks, Emma Watson)"
+              placeholder={isLoading.casts ? "Loading casts..." : "Input Cast Names (e.g., Tom Hanks, Emma Watson)"}
               onChange={(selected) => field.onChange(selected)}
               value={field.value}
             />
@@ -226,14 +264,7 @@ const AddMovie = () => {
         {errors.casts?.message && <p className="text-red-400 text-sm italic">{errors.casts.message}</p>}
       </div>
 
-      <InputAddMovie
-        name="overview"
-        control={control}
-        errors={errors.overview?.message && <p className="text-red-400 text-sm italic">{errors.overview.message}</p>}
-        type="textarea"
-        label="Overview"
-        placeholder="Input Movie overview"
-      />
+      <InputAddMovie name="overview" control={control} errors={errors.overview?.message && <p className="text-red-400 text-sm italic">{errors.overview.message}</p>} type="textarea" label="Overview" placeholder="Input Movie overview" />
 
       <button className="bg-third cursor-pointer py-4 text-primary font-semibold rounded-xl mt-4" type="submit">
         Submit
@@ -247,33 +278,9 @@ const InputAddMovie = ({ name, control, label, type = "text", placeholder, error
     <div className="flex flex-col gap-4">
       <label htmlFor={name}>{label}</label>
       {type === "textarea" ? (
-        <Controller
-          name={name}
-          control={control}
-          render={({ field }) => (
-            <textarea
-              {...field}
-              className="p-3 bg-[#283246] rounded-xl"
-              rows={7}
-              placeholder={placeholder}
-              {...props}
-            />
-          )}
-        />
+        <Controller name={name} control={control} render={({ field }) => <textarea {...field} className="p-3 bg-[#283246] rounded-xl" rows={7} placeholder={placeholder} {...props} />} />
       ) : (
-        <Controller
-          name={name}
-          control={control}
-          render={({ field }) => (
-            <input
-              {...field}
-              type={type}
-              placeholder={placeholder}
-              className="p-3 bg-[#283246] rounded-xl"
-              {...props}
-            />
-          )}
-        />
+        <Controller name={name} control={control} render={({ field }) => <input {...field} type={type} placeholder={placeholder} className="p-3 bg-[#283246] rounded-xl" {...props} />} />
       )}
       {errors}
     </div>
