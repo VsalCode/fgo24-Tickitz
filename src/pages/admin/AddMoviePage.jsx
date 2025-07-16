@@ -69,7 +69,7 @@ const AddMoviePage = () => {
     },
   });
 
-  const optionsToIds = (options) => options.map((opt) => opt.value);
+  // const optionsToIds = (options) => options.map((opt) => opt.value);
 
   async function addMovieEndpoint(movie) {
     try {
@@ -80,13 +80,22 @@ const AddMoviePage = () => {
     }
   }
 
+  const transformOptions = (options) => 
+    options.map(opt => {
+      if (opt.__isNew__) {
+        return { name: opt.value }; 
+      } else {
+        return { id: opt.value };  
+      }
+    });
+
   const handleAddMovie = async (data) => {
     const movie = {
       id: nanoid(),
       backdrop_path: data.backdrop,
-      casts: optionsToIds(data.casts),
-      directors: optionsToIds(data.directors),
-      genres: optionsToIds(data.genres),
+      genres: transformOptions(data.genres),
+      directors: transformOptions(data.directors),
+      casts: transformOptions(data.casts),
       overview: data.overview,
       poster_path: data.poster,
       release_date: data.release_date,
