@@ -5,25 +5,52 @@ import { IoClose } from "react-icons/io5";
 import { MdLogout } from "react-icons/md";
 import toast, { Toaster } from "react-hot-toast";
 import logo from '../assets/icon/logo.png'
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { authActions } from "../redux/reducer/auth";
 import { currentUserActions } from "../redux/reducer/user"
+import http from "../utils/axios";
 
 const NavbarAdmin = () => {
   const [showHamburger, setShowHamburger] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch()
+  const token = useSelector((state) => state.auth.token)
 
   function HandleHamburger() {
     setShowHamburger(!showHamburger);
   }
 
-  function handleLogout() {
+  async function logoutEndpoint(token) {
+      try {
+        const { data } = await http(token).post("/auth/logout", {}, {
+          headers: { "Content-Type": "application/json" }
+        });
+        
+        if (!data.success) {
+          toast.error(data.message || "Logout failed!");
+          return null;
+        }
+        return data.results;
+      } catch (error) {
+        toast.error("Logout failed due to network error", error.message);
+        return null;
+      }
+    }
+  
+
+  async function handleLogout() {
+    try {
+      if (token) {
+        await logoutEndpoint(token);
+      }
     toast.success("Logout Success!");
     dispatch(authActions(null));
-          dispatch(currentUserActions(null));
+    dispatch(currentUserActions(null));
     toast.dismiss();
     navigate("/login", { replace: true });
+    } catch (error) {
+      toast.error("Logout failed!", error.message);
+    }
   }
 
   return (
